@@ -12,3 +12,6 @@
 
 # Executables
 *.hex
+
+# Mac
+.DS_Store
