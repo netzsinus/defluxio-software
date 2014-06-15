@@ -33,6 +33,8 @@ func main() {
 			}
 			log.Println("Frequency: " + strconv.FormatFloat(frequency, 'f', 10,
 				32))
+		} else if elements[0] == "I" {
+			log.Println("Info message: " + line)
 		} else {
 			log.Println("Received unknown data: " + line)
 		}
