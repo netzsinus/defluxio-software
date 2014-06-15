@@ -31,7 +31,7 @@ func main() {
 			if frequency < 48 || frequency > 52 {
 				log.Println("Frequency out of plausible range: " + line)
 			}
-			log.Println("Frequency: " + strconv.FormatFloat(frequency, 'f', 10,
+			log.Println("Frequency: " + strconv.FormatFloat(frequency, 'f', 5,
 				32))
 		} else if elements[0] == "I" {
 			log.Println("Info message: " + line)
