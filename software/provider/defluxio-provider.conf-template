@@ -1,0 +1,10 @@
+[API]
+key = "foo"
+meter = "foometer"
+
+[Network]
+host = "http://localhost:8080"
+
+[Device]
+Path = "/dev/cu.usbserial-A800ftEg"
+Baudrate = 9600
