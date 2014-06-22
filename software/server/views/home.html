@@ -1,0 +1,19 @@
+{{define "index"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Chat Example</title>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/app.js" type="text/javascript"></script>
+<script src="/js/justgage.1.0.1.min.js" type="text/javascript"></script>
+<script src="/js/raphael.2.1.0.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+var ws_endpoint = "ws://{{$}}/ws";
+</script>
+<link href="/css/main.css" rel="stylesheet"/>
+</head>
+<body>
+<div id="gauge" class="200x160px"></div>
+</body>
+</html>
+{{end}}

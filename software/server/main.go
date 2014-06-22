@@ -8,6 +8,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -15,16 +16,20 @@ import (
 )
 
 var configFile = flag.String("config", "defluxio.conf", "configuration file")
-var homeTempl = template.Must(template.ParseFiles("home.html"))
+
+//var homeTempl = template.Must(template.ParseFiles("home.html"))
+var templates *template.Template
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	homeTempl.Execute(w, r.Host)
+	//homeTempl.Execute(w, r.Host)
+	templates.ExecuteTemplate(w, "index", r.Host)
 }
 
 func init() {
 	flag.Parse()
 	loadConfiguration(*configFile)
+	templates = template.Must(template.ParseGlob("views/*"))
 }
 
 func main() {
@@ -33,8 +38,11 @@ func main() {
 	r.HandleFunc("/", serveHome).Methods("GET")
 	r.HandleFunc("/api/submit/{meter}", submitReading).Methods("POST")
 	r.HandleFunc("/ws", serveWs)
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("assets/")))
 	http.Handle("/", r)
-	err := http.ListenAndServe(Cfg.Network.Host, nil)
+	listenAddress := fmt.Sprintf("%s:%d", Cfg.Network.Host, Cfg.Network.Port)
+	log.Println("Starting server at " + listenAddress)
+	err := http.ListenAndServe(listenAddress, nil)
 	if err != nil {
 		log.Fatal("Failed to start http server: ", err)
 	}

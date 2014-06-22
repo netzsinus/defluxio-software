@@ -11,6 +11,7 @@ type ConfigurationData struct {
 	}
 	Network struct {
 		Host string
+		Port int
 	}
 }
 
