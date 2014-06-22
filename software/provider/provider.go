@@ -35,6 +35,14 @@ type ErrorMessage struct {
 func extract_readings(r io.Reader) {
 	defer extract_wg.Done()
 	scanner := bufio.NewScanner(r)
+	// Drop everything that is currently in the serial connection
+	// buffer. Use a startup flag to signal this.
+	startup := true
+	timer := time.NewTimer(time.Second * 2)
+	go func() {
+		<-timer.C
+		startup = false
+	}()
 	for scanner.Scan() {
 		line := scanner.Text()
 		if err := scanner.Err(); err != nil {
@@ -51,7 +59,11 @@ func extract_readings(r io.Reader) {
 				log.Println("Frequency out of plausible range: " + line)
 				continue
 			}
-			readingChannel <- frequency
+			if startup {
+				log.Println("Startup: Ignoring measurement", frequency)
+			} else {
+				readingChannel <- frequency
+			}
 		} else if elements[0] == "I" {
 			log.Println("Info message: " + line)
 		} else {
@@ -110,6 +122,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	// just one reader, since it is a serial connection
 	extract_wg.Add(1)
 	go extract_readings(s)
