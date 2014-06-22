@@ -42,22 +42,22 @@ type connection struct {
 }
 
 // readPump pumps messages from the websocket connection to the hub.
-//func (c *connection) readPump() {
-//	defer func() {
-//		h.unregister <- c
-//		c.ws.Close()
-//	}()
-//	c.ws.SetReadLimit(maxMessageSize)
-//	c.ws.SetReadDeadline(time.Now().Add(pongWait))
-//	c.ws.SetPongHandler(func(string) error { c.ws.SetReadDeadline(time.Now().Add(pongWait)); return nil })
-//	for {
-//		_, message, err := c.ws.ReadMessage()
-//		if err != nil {
-//			break
-//		}
-//		h.broadcast <- message
-//	}
-//}
+// incoming messages are simply ignored.
+func (c *connection) readPump() {
+	defer func() {
+		h.unregister <- c
+		c.ws.Close()
+	}()
+	c.ws.SetReadLimit(maxMessageSize)
+	c.ws.SetReadDeadline(time.Now().Add(pongWait))
+	c.ws.SetPongHandler(func(string) error { c.ws.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+	for {
+		_, _, err := c.ws.ReadMessage()
+		if err != nil {
+			break
+		}
+	}
+}
 
 // write writes a message with the given message type and payload.
 func (c *connection) write(mt int, payload []byte) error {
@@ -106,5 +106,5 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 	c := &connection{send: make(chan []byte, 256), ws: ws}
 	h.register <- c
 	go c.writePump()
-	//c.readPump()
+	c.readPump()
 }

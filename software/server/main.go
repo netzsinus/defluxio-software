@@ -16,13 +16,10 @@ import (
 )
 
 var configFile = flag.String("config", "defluxio.conf", "configuration file")
-
-//var homeTempl = template.Must(template.ParseFiles("home.html"))
 var templates *template.Template
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	//homeTempl.Execute(w, r.Host)
 	templates.ExecuteTemplate(w, "index", r.Host)
 }
 
