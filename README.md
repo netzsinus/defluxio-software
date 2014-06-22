@@ -6,6 +6,7 @@ lat. defluxio - "die Abweichung"
 Notes
 -----
 
+* [cubism.js data source](https://stackoverflow.com/questions/18069409/are-there-any-tutorials-or-examples-for-cubism-js-websocket)
 * [Schmitt-Trigger](http://www.mikrocontroller.net/articles/Schmitt-Trigger)
 * [PowerBox: The Safe AC Power Meter](https://instruct1.cit.cornell.edu/Courses/ee476/FinalProjects/s2008/cj72_xg37/cj72_xg37/)
 * [Komparatorschaltung mit dem LM393](http://www.ne555.at/schaltungstechnik/390-komparator-mit-lm393-und-einfacher-spannungsversorgung.html)
