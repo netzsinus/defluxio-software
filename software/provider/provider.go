@@ -73,11 +73,12 @@ func pusher() {
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Add("X-API-Key", Cfg.API.Key)
 		resp, err := client.Do(req)
-		defer resp.Body.Close()
 		if err != nil {
 			log.Println("Error posting data: ", err.Error())
 			continue
 		}
+		defer resp.Body.Close()
+
 		response, rerr := ioutil.ReadAll(resp.Body)
 		if rerr != nil {
 			log.Println("Error getting post result data: ", err.Error())
