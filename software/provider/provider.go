@@ -10,6 +10,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"runtime"
 	"strconv"
@@ -32,7 +33,7 @@ type ErrorMessage struct {
 	Message string
 }
 
-func extract_readings(r io.Reader) {
+func serial_read_readings(r io.Reader) {
 	defer extract_wg.Done()
 	scanner := bufio.NewScanner(r)
 	// Drop everything that is currently in the serial connection
@@ -69,6 +70,15 @@ func extract_readings(r io.Reader) {
 		} else {
 			log.Println("Received unknown data: " + line)
 		}
+	}
+}
+
+func simulate_readings() {
+	defer extract_wg.Done()
+	ticker := time.NewTicker(time.Second * 2)
+	for {
+		<-ticker.C
+		readingChannel <- 49.8 + (0.4 * rand.Float64())
 	}
 }
 
@@ -110,6 +120,7 @@ func pusher() {
 }
 
 var configFile = flag.String("config", "defluxio-provider.conf", "configuration file")
+var simulationMode = flag.Bool("sim", false, "simulation mode (does not need measurement hardware")
 
 func init() {
 	flag.Parse()
@@ -117,20 +128,26 @@ func init() {
 }
 
 func main() {
-	c := &serial.Config{Name: Cfg.Device.Path, Baud: Cfg.Device.Baudrate}
-	s, err := serial.OpenPort(c)
-	if err != nil {
-		log.Fatal(err)
+	if !*simulationMode {
+		c := &serial.Config{Name: Cfg.Device.Path, Baud: Cfg.Device.Baudrate}
+		s, err := serial.OpenPort(c)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// just one reader, since it is a serial connection
+		extract_wg.Add(1)
+		go serial_read_readings(s)
+	} else {
+		rand.Seed(42)
+		extract_wg.Add(1)
+		go simulate_readings()
 	}
 
-	// just one reader, since it is a serial connection
-	extract_wg.Add(1)
-	go extract_readings(s)
 	for c := 0; c < runtime.NumCPU(); c++ {
 		pusher_wg.Add(1)
 		go pusher()
 	}
-
 	extract_wg.Wait()
 	close(readingChannel)
 	pusher_wg.Wait()
