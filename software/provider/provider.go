@@ -77,8 +77,8 @@ func simulate_readings() {
 	defer extract_wg.Done()
 	ticker := time.NewTicker(time.Second * 2)
 	for {
-		<-ticker.C
 		readingChannel <- 49.8 + (0.4 * rand.Float64())
+		<-ticker.C
 	}
 }
 
