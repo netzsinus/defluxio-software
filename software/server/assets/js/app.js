@@ -7,22 +7,18 @@ $(function() {
     
   }
 
- // function random(name) {
- //   var value = 0,
- //       values = [],
- //       i = 0,
- //       last;
- //   return context.metric(function(start, stop, step, callback) {
- //     start = +start, stop = +stop;
- //     if (isNaN(last)) last = start;
- //     while (last < stop) {
- //       last += step;
- //       value = Number.NaN 
- //       values.push(value);
- //     }
- //     callback(null, values = values.slice((start - stop) / step));
- //   }, name);
- // }
+  function date2string(date) {
+    var hr = date.getHours();
+    var min = date.getMinutes();
+    if (min < 10) {
+      min = "0" + min;
+    }
+    var sec = date.getSeconds();
+    if (sec < 10) {
+      sec = "0" + sec;
+    }
+    return hr + ":" + min + ":" + sec;
+  }
   var now = Math.round(new Date()/1000)
   var netfreqdata = [
     { 
@@ -37,18 +33,16 @@ $(function() {
           width: 600,
           height: 200,
           tickFormats: { 
-            time: function(d) { 
-              console.log(time);
-              console.log(d);
-              var date=new Date(d*1000);
-              return date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+            bottom: function(d) { 
+              return date2string(new Date(d*1000));
             },
-            y: function(v) {
-              return v+" mHz";
+            y: function(d) {
+              return "bar";
             }
           },
           axes: ['left', 'bottom', 'right'],
-          ticks: { time: 6, right: 8, left: 8 }
+          windowSize: 100,
+          historySize: 200
         }
       );
 
@@ -74,14 +68,9 @@ $(function() {
       g.refresh(data.Value);
       var ts = new Date(Date.parse(data.Timestamp));
       var unixtime = Math.round(ts.getTime()/1000);
-      $("#timevalue").text(ts.toLocaleTimeString());
+      $("#timevalue").text(date2string(ts));
       areaChartInstance.push([{time: unixtime, y: (data.Value - 50)*1000}])
     }
-
-    
-
-
-
   } else {
     // TODO: Make this a popup.
     appendLog($("<div><b>Your browser does not support WebSockets.</b></div>"))
