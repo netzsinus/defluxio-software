@@ -1,19 +1,22 @@
-html {
-  overflow: hidden;
-}
-
 body {
-  overflow: hidden;
-  padding: 0;
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  background: white;
+  padding-top: 90px;
 }
 
-#gauge {
-  width:400px; height:320px;
+.center-block {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.vcenter {
   display: inline-block;
-  margin: 1em;
+  vertical-align: bottom;
+  float: none;
+}
+
+.top-buffer { margin-top:35px; }
+
+#freqgauge {
+  width:320px; height:240px;
 }
 

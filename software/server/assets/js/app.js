@@ -21,7 +21,7 @@ $(function() {
   }
   var now = Math.round(new Date()/1000)
   var netfreqdata = [
-    { 
+    {
       label: 'Netzfrequenz', 
             values: [ {time: now, y: 0} ] 
     }
@@ -30,8 +30,8 @@ $(function() {
         { 
           type: 'time.line', 
           data: netfreqdata,
-          width: 600,
-          height: 200,
+          width: 460,
+          height: 240,
           tickFormats: { 
             bottom: function(d) { 
               return date2string(new Date(d*1000));
@@ -49,13 +49,14 @@ $(function() {
   if (window["WebSocket"]) {
     // initialize gauge
     var g = new JustGage({
-      id: "gauge",
+      id: "freqgauge",
         value: "n/a",
-        min: 49.80,
-        max: 50.2,
+        min: 49.90,
+        max: 50.1,
         levelColors: [ "#CC0000", "#008000", "#CC0000" ], 
         levelColorsGradient: true,
-        title: "Frequenz"
+        title: "Frequenz",
+        label: "Hz"
     }); 
     // get data from the websocket.
     conn = new WebSocket(ws_endpoint);
