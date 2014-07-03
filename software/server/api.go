@@ -21,9 +21,51 @@ type Reading struct {
 	Value     float64
 }
 
-type ErrorMessage struct {
+type APIClientErrorMessage struct {
 	Id      string
 	Message string
+}
+
+type StatusCode int32
+
+const (
+	STATUS_OK               StatusCode = 200
+	STATUS_INTERNAL_ERROR              = 500
+	STATUS_NO_DB_CONNECTION            = 501 // TODO: Implement keepalive
+	STATUS_NO_UPDATES                  = 502
+)
+
+type ServerStatus struct {
+	Code           StatusCode
+	LastValueAdded time.Time
+	Message        string
+}
+
+var lastUpdate time.Time
+
+func serverStatus(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	// Check when the last value was received
+	maxTimeDeviation, _ := time.ParseDuration("30s")
+	deviation := lastUpdate.Sub(time.Now())
+	if (deviation > maxTimeDeviation) || (deviation < -maxTimeDeviation) {
+		statusmessage := ServerStatus{
+			STATUS_NO_UPDATES,
+			lastUpdate,
+			"No updates received."}
+		statusbytes, _ := json.Marshal(statusmessage)
+		w.Write(statusbytes)
+		return
+	}
+	// TODO: Add other checks here.
+
+	// Finally: No check failed, return OK.
+	statusmessage := ServerStatus{
+		STATUS_OK,
+		lastUpdate,
+		"All is good."}
+	statusbytes, _ := json.Marshal(statusmessage)
+	w.Write(statusbytes)
 }
 
 /* Accepts a new reading. Format: {"Timestamp":<ISO8601>,"Value":342.2}
@@ -44,7 +86,7 @@ func submitReading(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if invalidCredentials {
-		errormessage := ErrorMessage{"invalidcredentials", "given credentials are not valid"}
+		errormessage := APIClientErrorMessage{"invalidcredentials", "given credentials are not valid"}
 		errorbytes, _ := json.Marshal(errormessage)
 		http.Error(w,
 			string(errorbytes),
@@ -57,7 +99,7 @@ func submitReading(w http.ResponseWriter, r *http.Request) {
 	var reading Reading
 	err := decoder.Decode(&reading)
 	if err != nil {
-		errormessage := ErrorMessage{"invalidformat", "Cannot decode data - invalid format"}
+		errormessage := APIClientErrorMessage{"invalidformat", "Cannot decode data - invalid format"}
 		errorbytes, _ := json.Marshal(errormessage)
 		http.Error(w,
 			string(errorbytes),
@@ -69,7 +111,7 @@ func submitReading(w http.ResponseWriter, r *http.Request) {
 	maxTimeDeviation, _ := time.ParseDuration("30s")
 	deviation := reading.Timestamp.Sub(time.Now())
 	if (deviation > maxTimeDeviation) || (deviation < -maxTimeDeviation) {
-		errormessage := ErrorMessage{"timedeviation", "Timestamp deviates too much"}
+		errormessage := APIClientErrorMessage{"timedeviation", "Timestamp deviates too much"}
 		errorbytes, _ := json.Marshal(errormessage)
 		http.Error(w,
 			string(errorbytes),
@@ -79,7 +121,7 @@ func submitReading(w http.ResponseWriter, r *http.Request) {
 
 	// Check if value is within plausibility range
 	if reading.Value < 47.5 || reading.Value > 52 {
-		errormessage := ErrorMessage{"timedeviation", "Reading value is not plausible"}
+		errormessage := APIClientErrorMessage{"timedeviation", "Reading value is not plausible"}
 		errorbytes, _ := json.Marshal(errormessage)
 		http.Error(w, string(errorbytes), http.StatusBadRequest)
 		return
@@ -92,6 +134,7 @@ func submitReading(w http.ResponseWriter, r *http.Request) {
 	// Push the new reading into the database
 	meterReading := MeterReading{meterid, reading}
 	dbChannel <- meterReading
+	lastUpdate = reading.Timestamp
 	// finally: wrap everything again and forward update to all connected clients.
 	updateMessage, uerr := json.Marshal(reading)
 	if uerr != nil {

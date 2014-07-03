@@ -43,7 +43,8 @@ $(function() {
           },
           axes: ['left', 'bottom', 'right'],
           windowSize: 100,
-          historySize: 200
+          historySize: 20,
+					queueSize: 60
         }
       );
 

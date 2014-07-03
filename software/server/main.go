@@ -34,6 +34,7 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", serveHome).Methods("GET")
 	r.HandleFunc("/api/submit/{meter}", submitReading).Methods("POST")
+	r.HandleFunc("/api/status", serverStatus).Methods("GET")
 	r.HandleFunc("/ws", serveWs)
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("assets/")))
 	http.Handle("/", r)

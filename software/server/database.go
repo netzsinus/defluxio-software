@@ -45,13 +45,13 @@ func InitDBConnector() {
 			log.Fatal("Failed to create database ", Cfg.InfluxDB.Database)
 		}
 	}
+	log.Printf("Ready to push data into the database.")
 }
 
 func DBPusher() {
 	if client == nil {
 		log.Fatal("InfluxDB client not initialized - aborting")
 	}
-	log.Println("Ready to push values into the database")
 	for {
 		meterreading, ok := <-dbChannel
 		if !ok {
