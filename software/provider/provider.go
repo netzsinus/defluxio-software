@@ -134,7 +134,6 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-
 		// just one reader, since it is a serial connection
 		extract_wg.Add(1)
 		go serial_read_readings(s)
@@ -143,7 +142,6 @@ func main() {
 		extract_wg.Add(1)
 		go simulate_readings()
 	}
-
 	for c := 0; c < runtime.NumCPU(); c++ {
 		pusher_wg.Add(1)
 		go pusher()

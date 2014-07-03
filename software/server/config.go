@@ -13,6 +13,13 @@ type ConfigurationData struct {
 		Host string
 		Port int
 	}
+	InfluxDB struct {
+		Host     string
+		Port     int
+		Database string
+		User     string
+		Pass     string
+	}
 }
 
 var Cfg ConfigurationData

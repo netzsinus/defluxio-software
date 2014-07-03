@@ -15,4 +15,10 @@ using the following commands.
     $ go get github.com/gorilla/mux
     $ go run *.go
 
+## Installing InfluxDB
+
+You need to install the InfluxDB as outlined [on the influxdb
+website](http://influxdb.com/docs/v0.7/introduction/installation.html).
+to install the commandline interface.
+
 

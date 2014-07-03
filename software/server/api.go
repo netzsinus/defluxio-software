@@ -7,10 +7,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"log"
 	"net/http"
 	"time"
 )
+
+type MeterReading struct {
+	MeterID string
+	Reading Reading
+}
 
 type Reading struct {
 	Timestamp time.Time
@@ -77,16 +81,17 @@ func submitReading(w http.ResponseWriter, r *http.Request) {
 	if reading.Value < 47.5 || reading.Value > 52 {
 		errormessage := ErrorMessage{"timedeviation", "Reading value is not plausible"}
 		errorbytes, _ := json.Marshal(errormessage)
-		http.Error(w,
-			string(errorbytes),
-			http.StatusBadRequest)
+		http.Error(w, string(errorbytes), http.StatusBadRequest)
 		return
 	}
 
 	// round reading.Value to 4 decimal places
 	reading.Value = float64(int(reading.Value*1000)) / 1000
-	log.Println("Accepted", meterid, ":", reading.Timestamp, "-", reading.Value)
+	//log.Println("Accepted", meterid, ":", reading.Timestamp, "-", reading.Value)
 
+	// Push the new reading into the database
+	meterReading := MeterReading{meterid, reading}
+	dbChannel <- meterReading
 	// finally: wrap everything again and forward update to all connected clients.
 	updateMessage, uerr := json.Marshal(reading)
 	if uerr != nil {

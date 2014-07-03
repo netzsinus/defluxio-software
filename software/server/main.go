@@ -1,6 +1,4 @@
-// (C) 2014 Mathias Dalheimer <md@gonium.net>. Code derived from the
-// Gorilla WebSocket Demo, which is licensed as follows:
-// Copyright 2013 The Gorilla WebSocket Authors. All rights reserved.
+// (C) 2014 Mathias Dalheimer <md@gonium.net>.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -27,10 +25,12 @@ func init() {
 	flag.Parse()
 	loadConfiguration(*configFile)
 	templates = template.Must(template.ParseGlob("views/*"))
+	InitDBConnector()
 }
 
 func main() {
 	go h.run()
+	go DBPusher()
 	r := mux.NewRouter()
 	r.HandleFunc("/", serveHome).Methods("GET")
 	r.HandleFunc("/api/submit/{meter}", submitReading).Methods("POST")

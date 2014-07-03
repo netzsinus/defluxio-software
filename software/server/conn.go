@@ -1,4 +1,5 @@
-// (C) 2014 Mathias Dalheimer <md@gonium.net>. Code derived from the
+// (C) 2014 Mathias Dalheimer <md@gonium.net>.
+// Code derived from the
 // Gorilla WebSocket Demo, which is licensed as follows:
 // Copyright 2013 The Gorilla WebSocket Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
