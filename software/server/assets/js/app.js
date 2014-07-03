@@ -29,6 +29,7 @@ $(function() {
   var areaChartInstance = $('#freqchart').epoch(
         { 
           type: 'time.line', 
+					label: "Frequenz",
           data: netfreqdata,
           width: 460,
           height: 240,
@@ -53,7 +54,7 @@ $(function() {
         value: "n/a",
         min: 49.90,
         max: 50.1,
-        levelColors: [ "#CC0000", "#008000", "#CC0000" ], 
+        levelColors: [ "#2A4026", "#B6D96C", "#2A4026" ], 
         levelColorsGradient: true,
         title: "Frequenz",
         label: "Hz"
