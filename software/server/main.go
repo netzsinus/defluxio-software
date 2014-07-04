@@ -25,12 +25,16 @@ func init() {
 	flag.Parse()
 	loadConfiguration(*configFile)
 	templates = template.Must(template.ParseGlob("views/*"))
-	InitDBConnector()
+	if Cfg.InfluxDB.Enabled {
+		InitDBConnector()
+	}
 }
 
 func main() {
 	go h.run()
-	go DBPusher()
+	if Cfg.InfluxDB.Enabled {
+		go DBPusher()
+	}
 	r := mux.NewRouter()
 	r.HandleFunc("/", serveHome).Methods("GET")
 	r.HandleFunc("/api/submit/{meter}", submitReading).Methods("POST")

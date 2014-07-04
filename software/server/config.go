@@ -14,6 +14,7 @@ type ConfigurationData struct {
 		Port int
 	}
 	InfluxDB struct {
+		Enabled  bool
 		Host     string
 		Port     int
 		Database string

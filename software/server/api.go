@@ -130,11 +130,14 @@ func submitReading(w http.ResponseWriter, r *http.Request) {
 	// round reading.Value to 4 decimal places
 	reading.Value = float64(int(reading.Value*1000)) / 1000
 	//log.Println("Accepted", meterid, ":", reading.Timestamp, "-", reading.Value)
-
-	// Push the new reading into the database
-	meterReading := MeterReading{meterid, reading}
-	dbChannel <- meterReading
 	lastUpdate = reading.Timestamp
+
+	if Cfg.InfluxDB.Enabled {
+		// Push the new reading into the database
+		meterReading := MeterReading{meterid, reading}
+		dbChannel <- meterReading
+	}
+
 	// finally: wrap everything again and forward update to all connected clients.
 	updateMessage, uerr := json.Marshal(reading)
 	if uerr != nil {
