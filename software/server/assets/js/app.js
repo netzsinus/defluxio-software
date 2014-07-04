@@ -86,8 +86,8 @@ $(function() {
 		var rlgauge = new JustGage({
 			id: "rlgauge",
 				value: "n/a",
-				min: -500,
-				max: 500,
+				min: -1000,
+				max: 1000,
 				levelColors: [ "#2A4026", "#B6D96C", "#2A4026" ], 
 				levelColorsGradient: true,
 				title: "Regelleistung",

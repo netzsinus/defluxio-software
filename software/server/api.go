@@ -138,6 +138,7 @@ func submitReading(w http.ResponseWriter, r *http.Request) {
 		dbChannel <- meterReading
 	}
 
+	//TODO: Check for implausible values, see issue 8
 	// finally: wrap everything again and forward update to all connected clients.
 	updateMessage, uerr := json.Marshal(reading)
 	if uerr != nil {
