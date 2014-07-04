@@ -45,6 +45,10 @@ h1,h2,h3,h4,h5,h6 {
   width:320px; height:240px;
 }
 
+#rlgauge {
+  width:320px; height:240px;
+}
+
 #freqchart .frequenz .line {
 	fill: pink;
 	stroke: pink;

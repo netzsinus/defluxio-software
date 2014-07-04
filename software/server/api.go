@@ -128,7 +128,7 @@ func submitReading(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// round reading.Value to 4 decimal places
-	reading.Value = float64(int(reading.Value*1000)) / 1000
+	//	reading.Value = float64(int(reading.Value*1000)) / 1000
 	//log.Println("Accepted", meterid, ":", reading.Timestamp, "-", reading.Value)
 	lastUpdate = reading.Timestamp
 
