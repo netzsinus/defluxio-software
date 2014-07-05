@@ -3,7 +3,42 @@
   <div class="container-fluid">
     <a name="start"></a>
     <div class="row center-block">
-      <div class="col-md-12 vcenter pull-left">
+      <div class="col-md-12 vcenter">
+					<h3>
+						<i class="glyphicon glyphicon-stats right-buffer"></i> Frequenz des Stromnetzes
+					</h3>
+			</div>
+		</div>
+    <div class="row center-block top-buffer">
+      <div class="col-md-1 vcenter pull-left">
+      </div>
+			<div class="col-md-10 vcenter pull-left" id="warnings"></div>
+      <div class="col-md-1 vcenter pull-right">
+      </div>
+		</div>
+      <div class="col-md-1 vcenter pull-left">
+      </div>
+      <div class="col-md-3 vcenter pull-left" id="freqgauge"></div>
+      <div class="col-md-7 vcenter pull-right">
+        <div id="freqchart" class="epoch"></div>
+      </div>
+      <div class="col-md-1 vcenter pull-right">
+      </div>
+    </div>
+		<div class="row center-block top-buffer">
+      <div class="col-md-1 vcenter pull-left">
+      </div>
+      <div class="col-md-3 vcenter pull-left" id="rlgauge"></div>
+      <div class="col-md-7 vcenter pull-right">
+        <div id="rlchart" class="epoch"></div>
+      </div>
+      <div class="col-md-1 vcenter pull-right">
+      </div>
+    </div>
+		<div class="row center-block">
+      <div class="col-md-1 vcenter pull-left">
+      </div>
+      <div class="col-md-10 vcenter top-buffer">
         <p>Frequenzabweichung.de misst die Netzfrequenz des europäischen
         Stromnetzes. Die Messung liefert Einblicke in das Gleichgewicht
         unseres Stromnetz: Normalerweise beträgt die Netzfrequenz 50
@@ -14,66 +49,85 @@
         als 20 mHz von der Nennfrequenz 50 Hz abweicht wird die
         Primärregelung des Stromnetzes aktiv und gleicht
         die Abweichung aus.</p>
-        <p>Das Tacho auf der linken Seite zeigt immer den aktuellen Wert
-        an, während die Abweichung der letzen drei Minuten auf der rechten
-        Seite (in mHz) dargestellt wird. Die Schwankungen der Netzfrequenz sind
+        <p>Das Tacho zeigt immer den aktuellen Wert
+        an, während ein Graph der Abweichung der letzen drei Minuten 
+        (in mHz) dargestellt wird. Die Schwankungen der Netzfrequenz sind
         üblicherweise nicht bedenklich &mdash; unser Stromnetz ist recht
         stabil.</p>
+				<p>Darunter befindet sich die gleiche Darstellung für die
+				vermutlich eingesetzte Regelleistung. Die Regelleistung wird durch die
+				europäischen Übertragungsnetzbetreiber zur Verfügung gestellt
+				und dient dazu, kurzfristige Schwankungen der Frequenz
+				auszugleichen. Laut <a
+					href="https://www.entsoe.eu/publications/system-operations-reports/operation-handbook/Pages/default.aspx">
+					ENTSO-E Handbook</a> beträgt die durchschnittlich verfügbare
+				Regelleistung 19.500 MW/Hz. Sobald die Netzfrequenz mehr als
+				10mHz von den angestrebten 50Hz abweicht, wird durch die
+				beteiligten Kraftwerke die Regelleistung zur Verfügung gestellt.
+				Die hier dargestellten Werte stellen eine Schätzung dar.
+      </div>
+      <div class="col-md-1 vcenter pull-right">
       </div>
     </div>
-    <div class="row center-block top-buffer">
-      <div class="col-md-4 vcenter pull-left" id="freqgauge"></div>
-      <div class="col-md-8 vcenter pull-right">
-        <div id="freqchart" class="epoch"></div>
-      </div>
-    </div>
-		<div class="row center-block top-buffer">
-      <div class="col-md-4 vcenter pull-left" id="rlgauge"></div>
-      <div class="col-md-8 vcenter pull-right">
-        <div id="rlchart" class="epoch"></div>
-      </div>
-    </div>
+
     <a name="Projekt"></a>
     <div class="row center-block top-buffer">
       <div class="col-md-12 vcenter">
-          <h3>Das Projekt</h3>
+				<h3>
+					<i class="glyphicon glyphicon-book right-buffer"></i> Das Projekt
+				</h3>
 			</div>
 		</div>
-    <div class="row center-block">
+    <div class="row center-block top-buffer">
+      <div class="col-md-1 vcenter pull-left">
+      </div>
       <div class="col-md-6 vcenter pull-left">
-					<p>Wie verhält sich die Netzfrequenz in Deutschland? Um diese
-					Frage zu beantworten habe ich angefangen, ein entsprechendes
-					Messgerät und eine passende Datenaufzeichnung zu entwickeln.
-					Das Projekt ist noch jung, daher sind noch keine ausführlichen
-					Datensätze vorhanden. Die Hard- und Software steht unter der
-					BSD-Lizenz und kann via <a
-						href="https://github.com/gonium/defluxio">github.com/gonium/defluxio</a>
-					bezogen werden.  </p>
+					<p>Wie verändert sich die Netzfrequenz in Deutschland? Diese
+					und andere Fragen will frequenzabweichung.de mit einem eigens
+					entwickelten Messgerät und der Aufzeichnung der Daten
+					beantworten.  Das Projekt ist noch jung, daher sind noch keine
+					ausführlichen Datensätze vorhanden. Die Hard- und Software
+					steht unter der BSD-Lizenz und kann via <a
+					href="https://github.com/gonium/defluxio">github.com/gonium/defluxio</a>
+					bezogen werden.  </p> 
 					<p>Die jetzige Version der Hardware arbeitet direkt mit
 					Niederspannung und kann so nicht zum Nachbau empfohlen werden.
 					Eine Version, die mit Kleinspannung arbeitet, ist in der
-					Entwicklung. Daher befindet sich momentan noch kein Schaltplan 
+					Entwicklung. Daher befindet sich momentan noch kein Schaltplan
 					im Github-Repository.</p>
       </div>
-      <div class="col-md-6 vcenter pull-left">
+      <div class="col-md-5 vcenter pull-right">
 				<img src="/img/prototyp1.jpg" class="img-rounded"/>
+      </div>
+      <div class="col-md-1 vcenter pull-right">
       </div>
     </div>
     <a name="contact"></a>
     <div class="row center-block top-buffer">
       <div class="col-md-12 vcenter">
-          <h3>Kontakt</h3>
-          <p><i class="icon-envelope"></i>
-              <script language="JavaScript">
+				<h3>
+					<i class="glyphicon glyphicon-envelope right-buffer"></i> Kontakt
+				</h3>
+			</div>
+		</div>
+		<div class="row center-block top-buffer">
+			<div class="col-md-1 vcenter pull-left">
+			</div>
+			<div class="col-md-10 vcenter pull-left">
+				<p>
+					Mathias Dalheimer</br>
+					<script language="JavaScript">
                 document.write('<a h'+'ref="m'+'ailt'+'o:'+'%6d%64%40%67%6f%6e%69%75%6d%2e%6e%65%74">&#109;&#100;&#64;&#103;&#111;&#110;&#105;&#117;&#109;&#46;&#110;&#101;&#116;<\/a>');
-              </script><br/>
-              GPG key: B6501625<br/>
-              fingerprint: E7BA B68E A2D3 9B6A ECEF  4DE4 823E 0DBE B650 1625<br/>
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
+					</script><br/>
+					GPG key: B6501625<br/>
+					fingerprint: E7BA B68E A2D3 9B6A ECEF  4DE4 823E 0DBE B650 1625<br/>
+				</p>
+				<p><a href="/impressum">Impressum</a></p>
+			</div>
+			<div class="col-md-1 vcenter pull-right">
+			</div>
+		</div>
+	</div> <!-- container -->
   <script type="text/javascript">
     var ws_endpoint = "ws://{{$}}/ws";
   </script>

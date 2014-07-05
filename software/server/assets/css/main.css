@@ -40,6 +40,8 @@ h1,h2,h3,h4,h5,h6 {
 }
 
 .top-buffer { margin-top:35px; }
+.left-buffer { margin-left:20px; }
+.right-buffer { margin-right:20px; }
 
 #freqgauge {
   width:320px; height:240px;

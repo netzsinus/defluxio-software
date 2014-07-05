@@ -21,6 +21,11 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "index", r.Host)
 }
 
+func serveImpressum(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	templates.ExecuteTemplate(w, "impressum", r.Host)
+}
+
 func init() {
 	flag.Parse()
 	loadConfiguration(*configFile)
@@ -37,6 +42,7 @@ func main() {
 	}
 	r := mux.NewRouter()
 	r.HandleFunc("/", serveHome).Methods("GET")
+	r.HandleFunc("/impressum", serveImpressum).Methods("GET")
 	r.HandleFunc("/api/submit/{meter}", submitReading).Methods("POST")
 	r.HandleFunc("/api/status", serverStatus).Methods("GET")
 	r.HandleFunc("/ws", serveWs)

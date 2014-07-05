@@ -1,11 +1,6 @@
 $(function() {
 
-	var conn;
-	var msg = $("#msg");
-	var log = $("#log");
-	function appendLog(msg) {
 
-	}
 
 	function date2string(date) {
 		var hr = date.getHours();
@@ -24,13 +19,13 @@ $(function() {
 	var netfreqdata = [
 		{
 			label: 'Netzfrequenz', 
-				values: [ {time: now, y: 0} ] 
+				values: [ {time: now, y: 50.0} ]
 		}
 	];
 	var rldata = [
 		{
 			label: 'Regelleistung', 
-				values: [ {time: now, y: 0} ] 
+				values: [ {time: now, y: 0.0} ]
 		}
 	];
 	var freqChart = $('#freqchart').epoch({
@@ -43,8 +38,8 @@ $(function() {
 					bottom: function(d) {
 						return date2string(new Date(d*1000));
 					},
-					y: function(d) {
-						return "bar";
+					right: function(d) {
+						return d + "mHz";
 					}
 				},
 			axes: ['left', 'bottom', 'right'],
@@ -62,8 +57,8 @@ $(function() {
 					bottom: function(d) {
 						return date2string(new Date(d*1000));
 					},
-					y: function(d) {
-						return "bar";
+					right: function(d) {
+						return d + "MW";
 					}
 				},
 			axes: ['left', 'bottom', 'right'],
@@ -71,8 +66,6 @@ $(function() {
 			historySize: 20,
 			queueSize: 60
 		});
-
-	if (window["WebSocket"]) {
 		var freqgauge = new JustGage({
 			id: "freqgauge",
 				value: "n/a",
@@ -94,8 +87,9 @@ $(function() {
 				label: "MW"
 		}); 
 
+	if (window["WebSocket"]) {
 		// get data from the websocket.
-		conn = new WebSocket(ws_endpoint);
+		var conn = new WebSocket(ws_endpoint);
 		conn.onclose = function(evt) {
 			console.log("Connection closed.");
 			freqgauge.refresh("n/a");
@@ -105,11 +99,11 @@ $(function() {
 			data = JSON && JSON.parse(evt.data) || $.parseJSON(evt.data);
 			freqgauge.refresh(Number(data.Value).toFixed(3));
 			var regelleistung=0.0;
-			if (data.Value < 50-0.02) {
-				regelleistung = 19500*(50 - data.Value);
+			if (data.Value < 50-0.01) {
+				regelleistung = 17200*(50 - data.Value);
 			}
-			if (data.Value > 50+0.02) {
-				regelleistung = 19500*(50 - data.Value);
+			if (data.Value > 50+0.01) {
+				regelleistung = 17200*(50 - data.Value);
 			}
 			rlgauge.refresh(Number(regelleistung).toFixed(1));
 			var ts = new Date(Date.parse(data.Timestamp));
@@ -119,8 +113,8 @@ $(function() {
 			rlChart.push([{time: unixtime, y: regelleistung}])
 		}
 	} else {
-		// TODO: Make this a popup.
-		appendLog($("<div><b>Your browser does not support WebSockets.</b></div>"))
+		$("#warnings").html("Ihr Browser unterstützt keine Websockets. Daher können Sie leider keine Frequenzdaten empfangen.");
+		$("#warnings").addClass("alert alert-danger");
 	}
 });
 
