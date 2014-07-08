@@ -9,6 +9,10 @@ type ConfigurationData struct {
 	API struct {
 		Keys []string
 	}
+	Assets struct {
+		ViewPath  string
+		AssetPath string
+	}
 	Network struct {
 		Host string
 		Port int

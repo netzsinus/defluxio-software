@@ -6,8 +6,11 @@ keys = "foometer:bar"
 host = "127.0.0.1"
 port = 8080
 
+[Assets]
+viewpath = "./views"
+assetpath = "./assets"
+
 [InfluxDB]
-enabled  = false
 host = "127.0.0.1"
 port = 8086
 database = "frequency"

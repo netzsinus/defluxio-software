@@ -29,7 +29,7 @@ func serveImpressum(w http.ResponseWriter, r *http.Request) {
 func init() {
 	flag.Parse()
 	loadConfiguration(*configFile)
-	templates = template.Must(template.ParseGlob("views/*"))
+	templates = template.Must(template.ParseGlob(Cfg.Assets.ViewPath + "/*"))
 	if Cfg.InfluxDB.Enabled {
 		InitDBConnector()
 	}
@@ -46,7 +46,7 @@ func main() {
 	r.HandleFunc("/api/submit/{meter}", submitReading).Methods("POST")
 	r.HandleFunc("/api/status", serverStatus).Methods("GET")
 	r.HandleFunc("/ws", serveWs)
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir("assets/")))
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir(Cfg.Assets.AssetPath)))
 	http.Handle("/", r)
 	listenAddress := fmt.Sprintf("%s:%d", Cfg.Network.Host, Cfg.Network.Port)
 	log.Println("Starting server at " + listenAddress)
