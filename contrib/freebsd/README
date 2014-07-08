@@ -1,0 +1,24 @@
+
+
+### Installing InfluxDB
+
+# Building influxdb on freebsd:
+# see https://gist.github.com/akhenakh/10819108
+
+pkg install bison flex leveldb protobuf gmake ruby ruby-gems bzr mercurial valgrind
+export CC=clang
+export GOROOT=/home/akh/dev/gosrc
+export CGO_CFLAGS="-I/usr/local/include"
+export CGO_LDFLAGS="-L/usr/local/lib"
+ 
+git clone https://github.com/influxdb/influxdb.git
+cd influxdb
+git checkout 216.... // Release version!
+./configure --with-flex=/usr/local/bin/flex --with-bison=/usr/local/bin/bison
+ 
+# edit Makefile to change the SHELL path to /usr/local/bin/bash
+gmake
+ 
+# a test will fail but the daemon binary is working
+
+# get the admin templates directory from http://s3.amazonaws.com/influxdb/influxdb-latest.386.tar.gz and move it in the same directory as the daemon binary
