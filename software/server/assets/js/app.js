@@ -69,12 +69,12 @@ $(function() {
 		var freqgauge = new JustGage({
 			id: "freqgauge",
 				value: "n/a",
-				min: 49.90,
-				max: 50.1,
+				min: -150,
+				max: 150,
 				levelColors: [ "#2A4026", "#B6D96C", "#2A4026" ], 
 				levelColorsGradient: true,
-				title: "Frequenz",
-				label: "Hz"
+				title: "Frequenzabweichung",
+				label: "mHz"
 		});
 		var rlgauge = new JustGage({
 			id: "rlgauge",
@@ -97,13 +97,14 @@ $(function() {
 		}
 		conn.onmessage = function(evt) {
 			data = JSON && JSON.parse(evt.data) || $.parseJSON(evt.data);
-			freqgauge.refresh(Number(data.Value).toFixed(3));
+			freqgauge.refresh(Number((data.Value-50)*1000).toFixed(0));
 			var regelleistung=0.0;
 			if (data.Value < 50-0.01) {
-				regelleistung = 17200*(50 - data.Value);
+				regelleistung = 17200*(50 - data.Value) - 0.01*17200;
 			}
 			if (data.Value > 50+0.01) {
-				regelleistung = 17200*(50 - data.Value);
+				regelleistung = 17200*(50 - data.Value) + 0.01*17200;
+
 			}
 			rlgauge.refresh(Number(regelleistung).toFixed(1));
 			var ts = new Date(Date.parse(data.Timestamp));
