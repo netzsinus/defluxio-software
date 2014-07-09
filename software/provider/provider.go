@@ -10,6 +10,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math"
 	"math/rand"
 	"net/http"
 	"runtime"
@@ -35,6 +36,7 @@ type ErrorMessage struct {
 
 func serial_read_readings(r io.Reader) {
 	defer extract_wg.Done()
+	lastfrequency := 0.0
 	scanner := bufio.NewScanner(r)
 	// Drop everything that is currently in the serial connection
 	// buffer. Use a startup flag to signal this.
@@ -62,8 +64,15 @@ func serial_read_readings(r io.Reader) {
 			}
 			if startup {
 				log.Println("Startup: Ignoring measurement", frequency)
+				lastfrequency = frequency
 			} else {
-				readingChannel <- frequency
+				// Now, we know that the measurement is a plausible one. Do a
+				// last check for spikes (this is a strange phenomenon,
+				// see https://github.com/gonium/defluxio/issues/8)
+				if math.Abs(lastfrequency-frequency) < Cfg.Validation.SpikeThreshold {
+					readingChannel <- frequency
+				}
+				lastfrequency = frequency
 			}
 		} else if elements[0] == "I" {
 			log.Println("Info message: " + line)

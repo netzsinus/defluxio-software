@@ -17,6 +17,9 @@ type ConfigurationData struct {
 		Path     string
 		Baudrate int
 	}
+	Validation struct {
+		SpikeThreshold float64
+	}
 }
 
 var Cfg ConfigurationData

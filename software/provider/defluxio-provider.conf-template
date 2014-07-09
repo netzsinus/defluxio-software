@@ -8,3 +8,6 @@ host = "http://127.0.0.1:8080"
 [Device]
 Path = "/dev/cu.usbserial-A800ftEg"
 Baudrate = 9600
+
+[Validation]
+SpikeThreshold = 150
