@@ -10,4 +10,4 @@ Path = "/dev/cu.usbserial-A800ftEg"
 Baudrate = 9600
 
 [Validation]
-SpikeThreshold = 150
+SpikeThreshold = 0.150
