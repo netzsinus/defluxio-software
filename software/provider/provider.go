@@ -49,7 +49,8 @@ func serial_read_readings(r io.Reader) {
 	for scanner.Scan() {
 		line := scanner.Text()
 		if err := scanner.Err(); err != nil {
-			log.Fatal(err)
+			log.Println("Failed to scan line:" + err.Error())
+			continue
 		}
 		elements := strings.Split(line, ";")
 		if elements[0] == "F" {
@@ -71,6 +72,8 @@ func serial_read_readings(r io.Reader) {
 				// see https://github.com/gonium/defluxio/issues/8)
 				if math.Abs(lastfrequency-frequency) < Cfg.Validation.SpikeThreshold {
 					readingChannel <- frequency
+				} else {
+					log.Println("Rejected spike:", frequency)
 				}
 				lastfrequency = frequency
 			}
