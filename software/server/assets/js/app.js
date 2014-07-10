@@ -19,7 +19,7 @@ $(function() {
 	var netfreqdata = [
 		{
 			label: 'Netzfrequenz', 
-				values: [ {time: now, y: 50.0} ]
+				values: [ {time: now, y: 0.0} ]
 		}
 	];
 	var rldata = [
