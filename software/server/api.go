@@ -7,14 +7,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"log"
 	"net/http"
 	"time"
 )
-
-type MeterReading struct {
-	MeterID string
-	Reading Reading
-}
 
 type Reading struct {
 	Timestamp time.Time
@@ -135,7 +131,10 @@ func submitReading(w http.ResponseWriter, r *http.Request) {
 	if Cfg.InfluxDB.Enabled {
 		// Push the new reading into the database
 		meterReading := MeterReading{meterid, reading}
-		dbChannel <- meterReading
+		if dbclient == nil {
+			log.Fatal("DBClient not correctly initialized!")
+		}
+		dbclient.DbChannel <- meterReading
 	}
 
 	//TODO: Check for implausible values, see issue 8

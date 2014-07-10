@@ -15,6 +15,7 @@ import (
 
 var configFile = flag.String("config", "defluxio.conf", "configuration file")
 var templates *template.Template
+var dbclient *DBClient
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -31,15 +32,17 @@ func init() {
 	loadConfiguration(*configFile)
 	templates = template.Must(template.ParseGlob(Cfg.Assets.ViewPath + "/*"))
 	if Cfg.InfluxDB.Enabled {
-		InitDBConnector()
+		var err error
+		dbclient, err = NewDBClient()
+		if err != nil {
+			log.Fatal("Cannot initialize database client:", err.Error)
+		}
+		go dbclient.mkDBPusher()
 	}
 }
 
 func main() {
 	go h.run()
-	if Cfg.InfluxDB.Enabled {
-		go DBPusher()
-	}
 	r := mux.NewRouter()
 	r.HandleFunc("/", serveHome).Methods("GET")
 	r.HandleFunc("/impressum", serveImpressum).Methods("GET")
