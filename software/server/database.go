@@ -59,10 +59,6 @@ func NewDBClient() (*DBClient, error) {
 }
 
 func (dbc DBClient) mkDBPusher() func() {
-	//	if client == nil {
-	//		log.Fatal("InfluxDB client not initialized - aborting")
-	//	}
-	fmt.Printf("mkDBPusher")
 	for {
 		meterreading, ok := <-dbc.DbChannel
 		if !ok {
@@ -81,4 +77,14 @@ func (dbc DBClient) mkDBPusher() func() {
 			log.Printf("Failed to store data: ", err)
 		}
 	}
+}
+
+func (dbc DBClient) getAllValues(meterID string) ([]MeterReading, error) {
+	querystr := fmt.Sprintf("select time, frequency from %s", meterID)
+	series, err := dbc.client.Query(querystr)
+	if err != nil {
+		return nil, fmt.Errorf("Failed query:", err.Error())
+	}
+	fmt.Printf("%v", series)
+	return nil, nil
 }
