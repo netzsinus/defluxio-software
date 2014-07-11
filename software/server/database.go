@@ -1,6 +1,6 @@
 // (C) 2014 Mathias Dalheimer <md@gonium.net>. See LICENSE file for
 // license.
-package main
+package defluxio
 
 import (
 	"fmt"

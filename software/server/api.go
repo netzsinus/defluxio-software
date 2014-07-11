@@ -1,7 +1,7 @@
 // (C) 2014 Mathias Dalheimer <md@gonium.net>. See LICENSE file for
 // license.
 
-package main
+package defluxio
 
 import (
 	"encoding/json"
@@ -66,7 +66,7 @@ func serverStatus(w http.ResponseWriter, r *http.Request) {
 
 /* Accepts a new reading. Format: {"Timestamp":<ISO8601>,"Value":342.2}
  */
-func submitReading(w http.ResponseWriter, r *http.Request) {
+func submitReading(w http.ResponseWriter, r *http.Request, dbclient *DBClient) {
 	w.Header().Set("Content-Type", "application/json")
 	// extract and check credentials.
 	// TODO: Refactore this into a separate middleware for chaining.
@@ -133,8 +133,9 @@ func submitReading(w http.ResponseWriter, r *http.Request) {
 		meterReading := MeterReading{meterid, reading}
 		if dbclient == nil {
 			log.Fatal("DBClient not correctly initialized!")
+		} else {
+			dbclient.DbChannel <- meterReading
 		}
-		dbclient.DbChannel <- meterReading
 	}
 
 	//TODO: Check for implausible values, see issue 8
