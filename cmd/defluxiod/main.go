@@ -7,6 +7,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/gonium/defluxio"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -14,8 +15,9 @@ import (
 )
 
 var configFile = flag.String("config", "defluxio.conf", "configuration file")
+var Cfg *defluxio.ServerConfigurationData
 var templates *template.Template
-var dbclient *DBClient
+var dbclient *defluxio.DBClient
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -29,29 +31,36 @@ func serveImpressum(w http.ResponseWriter, r *http.Request) {
 
 func init() {
 	flag.Parse()
-	loadConfiguration(*configFile)
+	var loaderror error
+	Cfg, loaderror = defluxio.LoadServerConfiguration(*configFile)
+	if loaderror != nil {
+		log.Fatal("Error loading configuration: ", loaderror.Error())
+	}
 	templates = template.Must(template.ParseGlob(Cfg.Assets.ViewPath + "/*"))
 	if Cfg.InfluxDB.Enabled {
 		var err error
-		dbclient, err = NewDBClient()
+		dbclient, err = defluxio.NewDBClient(Cfg)
 		if err != nil {
 			log.Fatal("Cannot initialize database client:", err.Error)
 		}
-		go dbclient.mkDBPusher()
+		go dbclient.MkDBPusher()
 	}
 }
 
 func main() {
-	go h.run()
+	// TODO: Refactor, H is a global right now, this is not good.
+	go defluxio.H.Run()
 	r := mux.NewRouter()
 	r.HandleFunc("/", serveHome).Methods("GET")
 	r.HandleFunc("/impressum", serveImpressum).Methods("GET")
-	r.HandleFunc("/api/submit/{meter}", submitReading).Methods("POST")
-	r.HandleFunc("/api/status", serverStatus).Methods("GET")
-	r.HandleFunc("/ws", serveWs)
+	r.HandleFunc("/api/submit/{meter}",
+		defluxio.MkSubmitReadingHandler(dbclient, Cfg)).Methods("POST")
+	r.HandleFunc("/api/status", defluxio.ServerStatus).Methods("GET")
+	r.HandleFunc("/ws", defluxio.ServeWs)
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir(Cfg.Assets.AssetPath)))
 	http.Handle("/", r)
-	listenAddress := fmt.Sprintf("%s:%d", Cfg.Network.Host, Cfg.Network.Port)
+	listenAddress := fmt.Sprintf("%s:%d", Cfg.Network.Host,
+		Cfg.Network.Port)
 	log.Println("Starting server at " + listenAddress)
 	err := http.ListenAndServe(listenAddress, nil)
 	if err != nil {

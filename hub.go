@@ -22,28 +22,28 @@ type hub struct {
 	unregister chan *connection
 }
 
-var h = hub{
+var H = hub{
 	broadcast:   make(chan []byte),
 	register:    make(chan *connection),
 	unregister:  make(chan *connection),
 	connections: make(map[*connection]bool),
 }
 
-func (h *hub) run() {
+func (H *hub) Run() {
 	for {
 		select {
-		case c := <-h.register:
-			h.connections[c] = true
-		case c := <-h.unregister:
-			delete(h.connections, c)
+		case c := <-H.register:
+			H.connections[c] = true
+		case c := <-H.unregister:
+			delete(H.connections, c)
 			close(c.send)
-		case m := <-h.broadcast:
-			for c := range h.connections {
+		case m := <-H.broadcast:
+			for c := range H.connections {
 				select {
 				case c.send <- m:
 				default:
 					close(c.send)
-					delete(h.connections, c)
+					delete(H.connections, c)
 				}
 			}
 		}

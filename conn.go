@@ -46,7 +46,7 @@ type connection struct {
 // incoming messages are simply ignored.
 func (c *connection) readPump() {
 	defer func() {
-		h.unregister <- c
+		H.unregister <- c
 		c.ws.Close()
 	}()
 	c.ws.SetReadLimit(maxMessageSize)
@@ -92,7 +92,7 @@ func (c *connection) writePump() {
 }
 
 // serverWs handles webocket requests from the peer.
-func serveWs(w http.ResponseWriter, r *http.Request) {
+func ServeWs(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", 405)
 		return
@@ -105,7 +105,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	c := &connection{send: make(chan []byte, 256), ws: ws}
-	h.register <- c
+	H.register <- c
 	go c.writePump()
 	c.readPump()
 }

@@ -19,15 +19,15 @@ type DBClient struct {
 	DbChannel chan MeterReading
 }
 
-func NewDBClient() (*DBClient, error) {
+func NewDBClient(serverConfig *ServerConfigurationData) (*DBClient, error) {
 	retval := new(DBClient)
 	var err error
 	retval.client, err = influxdb.NewClient(&influxdb.ClientConfig{
-		Host: fmt.Sprintf("%s:%d", Cfg.InfluxDB.Host,
-			Cfg.InfluxDB.Port),
-		Username:   Cfg.InfluxDB.User,
-		Password:   Cfg.InfluxDB.Pass,
-		Database:   Cfg.InfluxDB.Database,
+		Host: fmt.Sprintf("%s:%d", serverConfig.InfluxDB.Host,
+			serverConfig.InfluxDB.Port),
+		Username:   serverConfig.InfluxDB.User,
+		Password:   serverConfig.InfluxDB.Pass,
+		Database:   serverConfig.InfluxDB.Database,
 		HttpClient: http.DefaultClient,
 	})
 	if err != nil {
@@ -42,15 +42,15 @@ func NewDBClient() (*DBClient, error) {
 	for idx := range dbs {
 		name := dbs[idx]["name"]
 		log.Printf("found database %s", name)
-		if name == Cfg.InfluxDB.Database {
+		if name == serverConfig.InfluxDB.Database {
 			foundDatabase = true
 		}
 	}
 	if !foundDatabase {
 		log.Printf("Did not find database %s - attempting to create it",
-			Cfg.InfluxDB.Database)
-		if err := retval.client.CreateDatabase(Cfg.InfluxDB.Database); err != nil {
-			return nil, fmt.Errorf("Failed to create database ", Cfg.InfluxDB.Database)
+			serverConfig.InfluxDB.Database)
+		if err := retval.client.CreateDatabase(serverConfig.InfluxDB.Database); err != nil {
+			return nil, fmt.Errorf("Failed to create database ", serverConfig.InfluxDB.Database)
 		}
 	}
 	retval.DbChannel = make(chan MeterReading)
@@ -58,7 +58,7 @@ func NewDBClient() (*DBClient, error) {
 	return retval, nil
 }
 
-func (dbc DBClient) mkDBPusher() func() {
+func (dbc DBClient) MkDBPusher() func() {
 	for {
 		meterreading, ok := <-dbc.DbChannel
 		if !ok {
@@ -79,7 +79,7 @@ func (dbc DBClient) mkDBPusher() func() {
 	}
 }
 
-func (dbc DBClient) getAllValues(meterID string) ([]MeterReading, error) {
+func (dbc DBClient) GetAllValues(meterID string) ([]MeterReading, error) {
 	querystr := fmt.Sprintf("select time, frequency from %s", meterID)
 	series, err := dbc.client.Query(querystr)
 	if err != nil {

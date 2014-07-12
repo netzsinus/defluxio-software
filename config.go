@@ -2,10 +2,10 @@ package defluxio
 
 import (
 	"code.google.com/p/gcfg"
-	"log"
+	"fmt"
 )
 
-type ConfigurationData struct {
+type ServerConfigurationData struct {
 	API struct {
 		Keys []string
 	}
@@ -27,11 +27,12 @@ type ConfigurationData struct {
 	}
 }
 
-var Cfg ConfigurationData
-
-func loadConfiguration(configFile string) {
-	err := gcfg.ReadFileInto(&Cfg, configFile)
+func LoadServerConfiguration(configFile string) (*ServerConfigurationData, error) {
+	retval := new(ServerConfigurationData)
+	err := gcfg.ReadFileInto(retval, configFile)
 	if err != nil {
-		log.Fatal("Cannot read configuration file: " + err.Error())
+		return nil, fmt.Errorf("Cannot read configuration file: " + err.Error())
+	} else {
+		return retval, nil
 	}
 }
