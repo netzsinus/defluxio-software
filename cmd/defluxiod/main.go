@@ -39,7 +39,7 @@ func init() {
 	templates = template.Must(template.ParseGlob(Cfg.Assets.ViewPath + "/*"))
 	if Cfg.InfluxDB.Enabled {
 		var err error
-		dbclient, err = defluxio.NewDBClient(Cfg)
+		dbclient, err = defluxio.NewDBClient(&Cfg.InfluxDB)
 		if err != nil {
 			log.Fatal("Cannot initialize database client:", err.Error)
 		}

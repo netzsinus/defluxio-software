@@ -19,15 +19,15 @@ type DBClient struct {
 	DbChannel chan MeterReading
 }
 
-func NewDBClient(serverConfig *ServerConfigurationData) (*DBClient, error) {
+func NewDBClient(serverConfig *InfluxDBConfig) (*DBClient, error) {
 	retval := new(DBClient)
 	var err error
 	retval.client, err = influxdb.NewClient(&influxdb.ClientConfig{
-		Host: fmt.Sprintf("%s:%d", serverConfig.InfluxDB.Host,
-			serverConfig.InfluxDB.Port),
-		Username:   serverConfig.InfluxDB.User,
-		Password:   serverConfig.InfluxDB.Pass,
-		Database:   serverConfig.InfluxDB.Database,
+		Host: fmt.Sprintf("%s:%d", serverConfig.Host,
+			serverConfig.Port),
+		Username:   serverConfig.User,
+		Password:   serverConfig.Pass,
+		Database:   serverConfig.Database,
 		HttpClient: http.DefaultClient,
 	})
 	if err != nil {
@@ -42,15 +42,15 @@ func NewDBClient(serverConfig *ServerConfigurationData) (*DBClient, error) {
 	for idx := range dbs {
 		name := dbs[idx]["name"]
 		log.Printf("found database %s", name)
-		if name == serverConfig.InfluxDB.Database {
+		if name == serverConfig.Database {
 			foundDatabase = true
 		}
 	}
 	if !foundDatabase {
 		log.Printf("Did not find database %s - attempting to create it",
-			serverConfig.InfluxDB.Database)
-		if err := retval.client.CreateDatabase(serverConfig.InfluxDB.Database); err != nil {
-			return nil, fmt.Errorf("Failed to create database ", serverConfig.InfluxDB.Database)
+			serverConfig.Database)
+		if err := retval.client.CreateDatabase(serverConfig.Database); err != nil {
+			return nil, fmt.Errorf("Failed to create database ", serverConfig.Database)
 		}
 	}
 	retval.DbChannel = make(chan MeterReading)

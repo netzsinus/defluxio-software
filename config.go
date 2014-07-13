@@ -5,6 +5,15 @@ import (
 	"fmt"
 )
 
+type InfluxDBConfig struct {
+	Enabled  bool
+	Host     string
+	Port     int
+	Database string
+	User     string
+	Pass     string
+}
+
 type ServerConfigurationData struct {
 	API struct {
 		Keys []string
@@ -17,14 +26,7 @@ type ServerConfigurationData struct {
 		Host string
 		Port int
 	}
-	InfluxDB struct {
-		Enabled  bool
-		Host     string
-		Port     int
-		Database string
-		User     string
-		Pass     string
-	}
+	InfluxDB InfluxDBConfig
 }
 
 type ProviderConfigurationData struct {
@@ -44,18 +46,32 @@ type ProviderConfigurationData struct {
 	}
 }
 
-func LoadServerConfiguration(configFile string) (*ServerConfigurationData, error) {
-	retval := new(ServerConfigurationData)
-	err := gcfg.ReadFileInto(retval, configFile)
+type ExporterConfigurationData struct {
+	InfluxDB InfluxDBConfig
+}
+
+func LoadServerConfiguration(configFile string) (cfg *ServerConfigurationData, err error) {
+	cfg = new(ServerConfigurationData)
+	err = gcfg.ReadFileInto(cfg, configFile)
 	if err != nil {
 		return nil, fmt.Errorf("Cannot read configuration file: " + err.Error())
 	} else {
-		return retval, nil
+		return cfg, nil
 	}
 }
 
 func LoadProviderConfiguration(configFile string) (cfg *ProviderConfigurationData, err error) {
 	cfg = new(ProviderConfigurationData)
+	err = gcfg.ReadFileInto(cfg, configFile)
+	if err != nil {
+		return nil, fmt.Errorf("Cannot read configuration file: " + err.Error())
+	} else {
+		return cfg, nil
+	}
+}
+
+func LoadExporterConfiguration(configFile string) (cfg *ExporterConfigurationData, err error) {
+	cfg = new(ExporterConfigurationData)
 	err = gcfg.ReadFileInto(cfg, configFile)
 	if err != nil {
 		return nil, fmt.Errorf("Cannot read configuration file: " + err.Error())
