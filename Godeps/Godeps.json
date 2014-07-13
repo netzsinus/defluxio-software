@@ -1,0 +1,26 @@
+{
+	"ImportPath": "github.com/gonium/defluxio",
+	"GoVersion": "go1.3",
+	"Deps": [
+		{
+			"ImportPath": "code.google.com/p/gcfg",
+			"Rev": "c2d3050044d05357eaf6c3547249ba57c5e235cb"
+		},
+		{
+			"ImportPath": "github.com/gorilla/context",
+			"Rev": "14f550f51af52180c2eefed15e5fd18d63c0a64a"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Rev": "854d482e26505d59549690719cbc009f04042c2e"
+		},
+		{
+			"ImportPath": "github.com/gorilla/websocket",
+			"Rev": "efd7f76a14d91b4a8e9597306f554305ac9b0b9b"
+		},
+		{
+			"ImportPath": "github.com/influxdb/influxdb-go",
+			"Rev": "4046c4576d6a8695bdad213cad5247fc6fa11751"
+		}
+	]
+}
