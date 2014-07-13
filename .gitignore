@@ -1,3 +1,11 @@
+# defluxio binaries
+defluxio-provider
+defluxiod
+
+# configuration files
+defluxio-provider.conf
+defluxio.conf
+
 # Object files
 *.o
 *.ko

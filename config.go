@@ -27,6 +27,23 @@ type ServerConfigurationData struct {
 	}
 }
 
+type ProviderConfigurationData struct {
+	API struct {
+		Key   string
+		Meter string
+	}
+	Network struct {
+		Host string
+	}
+	Device struct {
+		Path     string
+		Baudrate int
+	}
+	Validation struct {
+		SpikeThreshold float64
+	}
+}
+
 func LoadServerConfiguration(configFile string) (*ServerConfigurationData, error) {
 	retval := new(ServerConfigurationData)
 	err := gcfg.ReadFileInto(retval, configFile)
@@ -34,5 +51,15 @@ func LoadServerConfiguration(configFile string) (*ServerConfigurationData, error
 		return nil, fmt.Errorf("Cannot read configuration file: " + err.Error())
 	} else {
 		return retval, nil
+	}
+}
+
+func LoadProviderConfiguration(configFile string) (cfg *ProviderConfigurationData, err error) {
+	cfg = new(ProviderConfigurationData)
+	err = gcfg.ReadFileInto(cfg, configFile)
+	if err != nil {
+		return nil, fmt.Errorf("Cannot read configuration file: " + err.Error())
+	} else {
+		return cfg, nil
 	}
 }

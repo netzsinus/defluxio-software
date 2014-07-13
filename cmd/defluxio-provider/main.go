@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/gonium/defluxio"
 	"github.com/tarm/goserial"
 	"io"
 	"io/ioutil"
@@ -20,6 +21,9 @@ import (
 	"time"
 )
 
+var simulationMode = flag.Bool("sim", false, "simulation mode (does not need measurement hardware")
+var configFile = flag.String("config", "defluxio-provider.conf", "configuration file")
+var Cfg *defluxio.ProviderConfigurationData
 var readingChannel = make(chan float64)
 var extract_wg sync.WaitGroup
 var pusher_wg sync.WaitGroup
@@ -131,12 +135,13 @@ func pusher() {
 	}
 }
 
-var configFile = flag.String("config", "defluxio-provider.conf", "configuration file")
-var simulationMode = flag.Bool("sim", false, "simulation mode (does not need measurement hardware")
-
 func init() {
 	flag.Parse()
-	loadConfiguration(*configFile)
+	var loaderror error
+	Cfg, loaderror = defluxio.LoadProviderConfiguration(*configFile)
+	if loaderror != nil {
+		log.Fatal("Error loading configuration: ", loaderror.Error())
+	}
 }
 
 func main() {
