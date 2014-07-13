@@ -7,6 +7,7 @@ import (
 	"github.com/influxdb/influxdb-go"
 	"log"
 	"net/http"
+	"time"
 )
 
 type MeterReading struct {
@@ -86,12 +87,24 @@ func (dbc DBClient) MkDBPusher(dbchannel chan MeterReading) (func(), error) {
 	}, nil
 }
 
-func (dbc DBClient) GetAllValues(meterID string) ([]MeterReading, error) {
-	querystr := fmt.Sprintf("select time, frequency from %s", meterID)
+func (dbc DBClient) GetLastFrequency(meterID string) (MeterReading, error) {
+	retval := MeterReading{}
+	querystr := fmt.Sprintf("select time, frequency from %s limit 1", meterID)
 	series, err := dbc.client.Query(querystr)
 	if err != nil {
-		return nil, fmt.Errorf("Failed query:", err.Error())
+		return retval, fmt.Errorf("Failed query:", err.Error())
 	}
-	fmt.Printf("%v", series)
-	return nil, nil
+	// TODO: Check length of return value
+	fmt.Printf("%#v\n", series)
+	fmt.Printf("%i\n", len(series))
+	// TODO: Cleanup
+	for key, val := range series {
+		fmt.Printf("%i: %s\n", key, val)
+		timestamp := time.Unix(0, int64(val.Points[0][0].(float64))*
+			int64(time.Millisecond))
+		frequency := val.Points[0][2].(float64)
+		fmt.Printf("timestamp %v: %f\n", timestamp, frequency)
+		retval = MeterReading{val.Name, Reading{timestamp, frequency}}
+	}
+	return retval, nil
 }

@@ -31,4 +31,10 @@ func init() {
 
 func main() {
 	fmt.Printf("Attempting to export from meter %s\n", *meterID)
+	result, err := dbclient.GetLastFrequency(*meterID)
+	if err != nil {
+		log.Fatal("Failed to query database: ", err.Error())
+	}
+	fmt.Printf("On %v, the frequency was recorded as %f\n",
+		result.Reading.Timestamp, result.Reading.Value)
 }
