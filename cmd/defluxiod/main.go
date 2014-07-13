@@ -42,10 +42,14 @@ func init() {
 		var err error
 		dbclient, err = defluxio.NewDBClient(&Cfg.InfluxDB)
 		if err != nil {
-			log.Fatal("Cannot initialize database client:", err.Error)
+			log.Fatal("Cannot initialize database client:", err.Error())
 		}
 		dbchannel = make(chan defluxio.MeterReading)
-		go dbclient.MkDBPusher(dbchannel)
+		pusher, perr := dbclient.MkDBPusher(dbchannel)
+		if perr != nil {
+			log.Fatal("Cannot generate database pusher: ", perr.Error())
+		}
+		go pusher()
 	}
 }
 

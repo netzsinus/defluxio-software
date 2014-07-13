@@ -36,12 +36,16 @@ func NewDBClient(serverConfig *InfluxDBConfig) (*DBClient, error) {
 	retval.client.DisableCompression()
 	// Save config for later use
 	retval.serverconfig = serverConfig
+	log.Println("Created DB client.")
 	return retval, nil
 }
 
-func (dbc DBClient) MkDBPusher(dbchannel chan MeterReading) (retfunc func(), reterr error) {
+func (dbc DBClient) MkDBPusher(dbchannel chan MeterReading) (func(), error) {
+	log.Println("Getting list of databases.")
 	dbs, err := dbc.client.GetDatabaseList()
 	if err != nil {
+		log.Println("acquired: ", len(dbs))
+
 		return nil, fmt.Errorf("Cannot retrieve list of InfluxDB databases:", err.Error())
 	}
 	foundDatabase := false
@@ -59,7 +63,7 @@ func (dbc DBClient) MkDBPusher(dbchannel chan MeterReading) (retfunc func(), ret
 			return nil, fmt.Errorf("Failed to create database ", dbc.serverconfig.Database)
 		}
 	}
-	//log.Printf("Ready to push data into the database.")
+	log.Printf("Ready to push data into the database.")
 
 	return func() {
 		for {
