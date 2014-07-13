@@ -1,0 +1,6 @@
+[InfluxDB]
+host = "localhost"
+port = 8086
+database = "frequency"
+user = root
+pass = root

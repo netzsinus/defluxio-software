@@ -15,8 +15,8 @@ type MeterReading struct {
 }
 
 type DBClient struct {
-	client    *influxdb.Client
-	DbChannel chan MeterReading
+	client       *influxdb.Client
+	serverconfig *InfluxDBConfig
 }
 
 func NewDBClient(serverConfig *InfluxDBConfig) (*DBClient, error) {
@@ -34,7 +34,13 @@ func NewDBClient(serverConfig *InfluxDBConfig) (*DBClient, error) {
 		return nil, fmt.Errorf("Cannot create InfluxDB client:", err.Error())
 	}
 	retval.client.DisableCompression()
-	dbs, err := retval.client.GetDatabaseList()
+	// Save config for later use
+	retval.serverconfig = serverConfig
+	return retval, nil
+}
+
+func (dbc DBClient) MkDBPusher(dbchannel chan MeterReading) (retfunc func(), reterr error) {
+	dbs, err := dbc.client.GetDatabaseList()
 	if err != nil {
 		return nil, fmt.Errorf("Cannot retrieve list of InfluxDB databases:", err.Error())
 	}
@@ -42,41 +48,39 @@ func NewDBClient(serverConfig *InfluxDBConfig) (*DBClient, error) {
 	for idx := range dbs {
 		name := dbs[idx]["name"]
 		log.Printf("found database %s", name)
-		if name == serverConfig.Database {
+		if name == dbc.serverconfig.Database {
 			foundDatabase = true
 		}
 	}
 	if !foundDatabase {
 		log.Printf("Did not find database %s - attempting to create it",
-			serverConfig.Database)
-		if err := retval.client.CreateDatabase(serverConfig.Database); err != nil {
-			return nil, fmt.Errorf("Failed to create database ", serverConfig.Database)
+			dbc.serverconfig.Database)
+		if err := dbc.client.CreateDatabase(dbc.serverconfig.Database); err != nil {
+			return nil, fmt.Errorf("Failed to create database ", dbc.serverconfig.Database)
 		}
 	}
-	retval.DbChannel = make(chan MeterReading)
 	//log.Printf("Ready to push data into the database.")
-	return retval, nil
-}
 
-func (dbc DBClient) MkDBPusher() func() {
-	for {
-		meterreading, ok := <-dbc.DbChannel
-		if !ok {
-			log.Fatal("Cannot read from internal channel - aborting")
+	return func() {
+		for {
+			meterreading, ok := <-dbchannel
+			if !ok {
+				log.Fatal("Cannot read from internal channel - aborting")
+			}
+			log.Printf("Pushing reading %v", meterreading.Reading)
+			series := &influxdb.Series{
+				Name:    meterreading.MeterID,
+				Columns: []string{"time", "frequency"},
+				Points: [][]interface{}{
+					[]interface{}{meterreading.Reading.Timestamp.Unix() * 1000,
+						meterreading.Reading.Value},
+				},
+			}
+			if err := dbc.client.WriteSeries([]*influxdb.Series{series}); err != nil {
+				log.Printf("Failed to store data: ", err)
+			}
 		}
-		log.Printf("Pushing reading %v", meterreading.Reading)
-		series := &influxdb.Series{
-			Name:    meterreading.MeterID,
-			Columns: []string{"time", "frequency"},
-			Points: [][]interface{}{
-				[]interface{}{meterreading.Reading.Timestamp.Unix() * 1000,
-					meterreading.Reading.Value},
-			},
-		}
-		if err := dbc.client.WriteSeries([]*influxdb.Series{series}); err != nil {
-			log.Printf("Failed to store data: ", err)
-		}
-	}
+	}, nil
 }
 
 func (dbc DBClient) GetAllValues(meterID string) ([]MeterReading, error) {

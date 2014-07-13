@@ -23,7 +23,7 @@ func init() {
 	}
 	dbclient, err = defluxio.NewDBClient(&cfg.InfluxDB)
 	if err != nil {
-		log.Fatal("Cannot initialize database client:", err.Error)
+		log.Fatal("Cannot initialize database client:", err.Error())
 	}
 }
 

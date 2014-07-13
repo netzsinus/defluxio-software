@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"log"
 	"net/http"
 	"time"
 )
@@ -66,7 +65,7 @@ func ServerStatus(w http.ResponseWriter, r *http.Request) {
 
 /* Accepts a new reading. Format: {"Timestamp":<ISO8601>,"Value":342.2}
  */
-func MkSubmitReadingHandler(dbclient *DBClient, serverConfig *ServerConfigurationData) http.HandlerFunc {
+func MkSubmitReadingHandler(dbchannel chan MeterReading, serverConfig *ServerConfigurationData) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		// extract and check credentials.
@@ -129,14 +128,10 @@ func MkSubmitReadingHandler(dbclient *DBClient, serverConfig *ServerConfiguratio
 		//log.Println("Accepted", meterid, ":", reading.Timestamp, "-", reading.Value)
 		lastUpdate = reading.Timestamp
 
-		if serverConfig.InfluxDB.Enabled {
+		if dbchannel != nil {
 			// Push the new reading into the database
 			meterReading := MeterReading{meterid, reading}
-			if dbclient == nil {
-				log.Fatal("DBClient not correctly initialized!")
-			} else {
-				dbclient.DbChannel <- meterReading
-			}
+			dbchannel <- meterReading
 		}
 
 		// finally: wrap everything again and forward update to all connected clients.

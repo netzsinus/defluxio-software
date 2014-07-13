@@ -18,6 +18,7 @@ var configFile = flag.String("config", "defluxio.conf", "configuration file")
 var Cfg *defluxio.ServerConfigurationData
 var templates *template.Template
 var dbclient *defluxio.DBClient
+var dbchannel chan defluxio.MeterReading
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -43,7 +44,8 @@ func init() {
 		if err != nil {
 			log.Fatal("Cannot initialize database client:", err.Error)
 		}
-		go dbclient.MkDBPusher()
+		dbchannel = make(chan defluxio.MeterReading)
+		go dbclient.MkDBPusher(dbchannel)
 	}
 }
 
@@ -54,7 +56,7 @@ func main() {
 	r.HandleFunc("/", serveHome).Methods("GET")
 	r.HandleFunc("/impressum", serveImpressum).Methods("GET")
 	r.HandleFunc("/api/submit/{meter}",
-		defluxio.MkSubmitReadingHandler(dbclient, Cfg)).Methods("POST")
+		defluxio.MkSubmitReadingHandler(dbchannel, Cfg)).Methods("POST")
 	r.HandleFunc("/api/status", defluxio.ServerStatus).Methods("GET")
 	r.HandleFunc("/ws", defluxio.ServeWs)
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir(Cfg.Assets.AssetPath)))
