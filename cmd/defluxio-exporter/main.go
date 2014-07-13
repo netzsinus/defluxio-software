@@ -6,11 +6,13 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/gonium/defluxio"
 	"log"
 )
 
 var configFile = flag.String("config", "defluxio-exporter.conf", "configuration file")
+var meterID = flag.String("meter", "", "ID of the meter to query")
 var cfg *defluxio.ExporterConfigurationData
 var dbclient *defluxio.DBClient
 
@@ -28,5 +30,5 @@ func init() {
 }
 
 func main() {
-	log.Println("Exporter starting up.")
+	fmt.Printf("Attempting to export from meter %s\n", *meterID)
 }

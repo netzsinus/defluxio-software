@@ -63,7 +63,6 @@ func (dbc DBClient) MkDBPusher(dbchannel chan MeterReading) (func(), error) {
 			return nil, fmt.Errorf("Failed to create database ", dbc.serverconfig.Database)
 		}
 	}
-	log.Printf("Ready to push data into the database.")
 
 	return func() {
 		for {
@@ -71,7 +70,7 @@ func (dbc DBClient) MkDBPusher(dbchannel chan MeterReading) (func(), error) {
 			if !ok {
 				log.Fatal("Cannot read from internal channel - aborting")
 			}
-			log.Printf("Pushing reading %v", meterreading.Reading)
+			//log.Printf("Pushing reading %v", meterreading.Reading)
 			series := &influxdb.Series{
 				Name:    meterreading.MeterID,
 				Columns: []string{"time", "frequency"},
