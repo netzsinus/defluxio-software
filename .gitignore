@@ -1,6 +1,7 @@
 # defluxio binaries
 defluxio-provider
 defluxiod
+defluxio-exporter
 
 # configuration files
 defluxio-provider.conf

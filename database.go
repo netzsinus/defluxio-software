@@ -37,7 +37,6 @@ func NewDBClient(serverConfig *InfluxDBConfig) (*DBClient, error) {
 	retval.client.DisableCompression()
 	// Save config for later use
 	retval.serverconfig = serverConfig
-	log.Println("Created DB client.")
 	return retval, nil
 }
 
@@ -87,24 +86,32 @@ func (dbc DBClient) MkDBPusher(dbchannel chan MeterReading) (func(), error) {
 	}, nil
 }
 
-func (dbc DBClient) GetLastFrequency(meterID string) (MeterReading, error) {
-	retval := MeterReading{}
-	querystr := fmt.Sprintf("select time, frequency from %s limit 1", meterID)
+func (dbc DBClient) GetLastFrequencies(meterID string, amount int) ([]MeterReading, error) {
+	retval := []MeterReading{}
+	querystr := fmt.Sprintf("select time, frequency from %s limit %d",
+		meterID, amount)
 	series, err := dbc.client.Query(querystr)
 	if err != nil {
 		return retval, fmt.Errorf("Failed query:", err.Error())
 	}
-	// TODO: Check length of return value
-	fmt.Printf("%#v\n", series)
-	fmt.Printf("%i\n", len(series))
-	// TODO: Cleanup
-	for key, val := range series {
-		fmt.Printf("%i: %s\n", key, val)
-		timestamp := time.Unix(0, int64(val.Points[0][0].(float64))*
+	if len(series[0].Points) != amount {
+		return retval, fmt.Errorf("Received invalid number of readings: Expected 1, got ", len(series))
+	}
+	// Debug: Print raw data points
+	//fmt.Printf("%#v\n", series[0].Points)
+	for _, val := range series[0].Points {
+		timestamp := time.Unix(0, int64(val[0].(float64))*
 			int64(time.Millisecond))
-		frequency := val.Points[0][2].(float64)
-		fmt.Printf("timestamp %v: %f\n", timestamp, frequency)
-		retval = MeterReading{val.Name, Reading{timestamp, frequency}}
+		frequency := val[2].(float64)
+		//fmt.Printf("timestamp %v: %f\n", timestamp, frequency)
+		retval = append(retval, MeterReading{series[0].Name,
+			Reading{timestamp, frequency}})
 	}
 	return retval, nil
+}
+
+func (dbc DBClient) GetLastFrequency(meterID string) (MeterReading,
+	error) {
+	readings, error := dbc.GetLastFrequencies(meterID, 1)
+	return readings[0], error
 }
