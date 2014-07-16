@@ -10,9 +10,21 @@ import (
 	"time"
 )
 
+// TODO: Move MeterID out of MeterReading - too much duplication
+// of the meter name. New type "MeterTimeseries?"
 type MeterReading struct {
 	MeterID string
 	Reading Reading
+}
+
+// ByTimestamp implements sort.Interface for []MeterReading
+// based on the timestamp field of a reading.
+type ByTimestamp []MeterReading
+
+func (a ByTimestamp) Len() int      { return len(a) }
+func (a ByTimestamp) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ByTimestamp) Less(i, j int) bool {
+	return a[i].Reading.Timestamp.Unix() < a[j].Reading.Timestamp.Unix()
 }
 
 type DBClient struct {
@@ -86,32 +98,57 @@ func (dbc DBClient) MkDBPusher(dbchannel chan MeterReading) (func(), error) {
 	}, nil
 }
 
+func (dbc DBClient) points2meterreadings(name string,
+	points [][]interface{}) (retval []MeterReading) {
+	for _, val := range points {
+		timestamp := time.Unix(0, int64(val[0].(float64))*
+			int64(time.Millisecond))
+		frequency := val[2].(float64)
+		//fmt.Printf("timestamp %v: %f\n", timestamp, frequency)
+		retval = append(retval, MeterReading{name, Reading{timestamp, frequency}})
+	}
+	return retval
+}
+
+func (dbc DBClient) GetFrequenciesBetween(meterID string,
+	start time.Time, end time.Time) (retval []MeterReading, err error) {
+	querystr := fmt.Sprintf("select time, frequency from %s where time > %ds and time < %ds", meterID, start.Unix(), end.Unix())
+	series, err := dbc.client.Query(querystr)
+	if err != nil {
+		return retval, fmt.Errorf("Failed query: %s", err.Error())
+	}
+	if len(series) == 0 {
+		return retval, fmt.Errorf("No dataset received from database.")
+	}
+	// Debug: Print raw data points
+	//fmt.Printf("%#v\n", series[0].Points)
+	retval = dbc.points2meterreadings(series[0].Name, series[0].Points)
+	return retval, nil
+}
+
 func (dbc DBClient) GetLastFrequencies(meterID string, amount int) ([]MeterReading, error) {
 	retval := []MeterReading{}
 	querystr := fmt.Sprintf("select time, frequency from %s limit %d",
 		meterID, amount)
 	series, err := dbc.client.Query(querystr)
 	if err != nil {
-		return retval, fmt.Errorf("Failed query:", err.Error())
+		return retval, fmt.Errorf("Failed query: %s", err.Error())
 	}
 	if len(series[0].Points) != amount {
-		return retval, fmt.Errorf("Received invalid number of readings: Expected 1, got ", len(series))
+		return retval, fmt.Errorf("Received invalid number of readings: Expected %d, got ", len(series))
 	}
 	// Debug: Print raw data points
 	//fmt.Printf("%#v\n", series[0].Points)
-	for _, val := range series[0].Points {
-		timestamp := time.Unix(0, int64(val[0].(float64))*
-			int64(time.Millisecond))
-		frequency := val[2].(float64)
-		//fmt.Printf("timestamp %v: %f\n", timestamp, frequency)
-		retval = append(retval, MeterReading{series[0].Name,
-			Reading{timestamp, frequency}})
-	}
+	retval = dbc.points2meterreadings(series[0].Name, series[0].Points)
 	return retval, nil
 }
 
 func (dbc DBClient) GetLastFrequency(meterID string) (MeterReading,
 	error) {
 	readings, error := dbc.GetLastFrequencies(meterID, 1)
-	return readings[0], error
+	if error != nil {
+		return MeterReading{}, error
+	} else {
+		return readings[0], error
+	}
 }

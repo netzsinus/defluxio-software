@@ -9,7 +9,9 @@ import (
 	"fmt"
 	"github.com/gonium/defluxio"
 	"log"
+	"sort"
 	"strings"
+	"time"
 )
 
 var configFile = flag.String("config", "defluxio-exporter.conf", "configuration file")
@@ -47,6 +49,19 @@ func main() {
 	}
 	for _, element := range meterReadings {
 		fmt.Printf("%v: %f\n", element.Reading.Timestamp,
+			element.Reading.Value)
+	}
+
+	// Hack for testing
+	timeReadings, terr := dbclient.GetFrequenciesBetween(*meterID,
+		time.Unix(1405500186, 0), time.Unix(1405500594, 0))
+	if terr != nil {
+		log.Fatal("Failed to query database: ", terr.Error())
+	}
+	sort.Sort(defluxio.ByTimestamp(timeReadings))
+	fmt.Printf("timestamp\treading\n")
+	for _, element := range timeReadings {
+		fmt.Printf("%d\t%f\n", element.Reading.Timestamp.Unix(),
 			element.Reading.Value)
 	}
 	//TODO: Write exporter. The exporter should use a TSV format with
