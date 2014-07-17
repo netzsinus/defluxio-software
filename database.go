@@ -44,7 +44,7 @@ func NewDBClient(serverConfig *InfluxDBConfig) (*DBClient, error) {
 		HttpClient: http.DefaultClient,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Cannot create InfluxDB client:", err.Error())
+		return nil, fmt.Errorf("Cannot create InfluxDB client: %s", err.Error())
 	}
 	retval.client.DisableCompression()
 	// Save config for later use
@@ -58,7 +58,7 @@ func (dbc DBClient) MkDBPusher(dbchannel chan MeterReading) (func(), error) {
 	if err != nil {
 		log.Println("acquired: ", len(dbs))
 
-		return nil, fmt.Errorf("Cannot retrieve list of InfluxDB databases:", err.Error())
+		return nil, fmt.Errorf("Cannot retrieve list of InfluxDB databases: %s", err.Error())
 	}
 	foundDatabase := false
 	for idx := range dbs {
@@ -72,7 +72,7 @@ func (dbc DBClient) MkDBPusher(dbchannel chan MeterReading) (func(), error) {
 		log.Printf("Did not find database %s - attempting to create it",
 			dbc.serverconfig.Database)
 		if err := dbc.client.CreateDatabase(dbc.serverconfig.Database); err != nil {
-			return nil, fmt.Errorf("Failed to create database ", dbc.serverconfig.Database)
+			return nil, fmt.Errorf("Failed to create database %s", dbc.serverconfig.Database)
 		}
 	}
 
@@ -92,7 +92,7 @@ func (dbc DBClient) MkDBPusher(dbchannel chan MeterReading) (func(), error) {
 				},
 			}
 			if err := dbc.client.WriteSeries([]*influxdb.Series{series}); err != nil {
-				log.Printf("Failed to store data: ", err)
+				log.Printf("Failed to store data: %s", err)
 			}
 		}
 	}, nil
