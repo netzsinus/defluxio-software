@@ -37,24 +37,24 @@ func init() {
 
 func main() {
 	fmt.Printf("Attempting to export from meter %s\n", *meterID)
-	result, err := dbclient.GetLastFrequency(*meterID)
-	if err != nil {
-		log.Fatal("Failed to query database: ", err.Error())
-	}
-	fmt.Printf("On %v, the frequency was recorded as %f\n",
-		result.Reading.Timestamp, result.Reading.Value)
-	meterReadings, err := dbclient.GetLastFrequencies(*meterID, 10)
-	if err != nil {
-		log.Fatal("Failed to query database: ", err.Error())
-	}
-	for _, element := range meterReadings {
-		fmt.Printf("%v: %f\n", element.Reading.Timestamp,
-			element.Reading.Value)
-	}
+	//result, err := dbclient.GetLastFrequency(*meterID)
+	//if err != nil {
+	//	log.Fatal("Failed to query database: ", err.Error())
+	//}
+	//fmt.Printf("On %v, the frequency was recorded as %f\n",
+	//	result.Reading.Timestamp, result.Reading.Value)
+	//meterReadings, err := dbclient.GetLastFrequencies(*meterID, 10)
+	//if err != nil {
+	//	log.Fatal("Failed to query database: ", err.Error())
+	//}
+	//for _, element := range meterReadings {
+	//	fmt.Printf("%v: %f\n", element.Reading.Timestamp,
+	//		element.Reading.Value)
+	//}
 
 	// Hack for testing
 	timeReadings, terr := dbclient.GetFrequenciesBetween(*meterID,
-		time.Unix(1405500186, 0), time.Unix(1405500594, 0))
+		time.Unix(1405525188, 0), time.Unix(1405525439, 0))
 	if terr != nil {
 		log.Fatal("Failed to query database: ", terr.Error())
 	}
