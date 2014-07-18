@@ -8,6 +8,7 @@ import (
 	"flag"
 	"github.com/gonium/defluxio"
 	"log"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -15,8 +16,14 @@ import (
 
 var configFile = flag.String("config", "defluxio-exporter.conf", "configuration file")
 var meterID = flag.String("meter", "", "ID of the meter to query")
-var startTimestamp = flag.Int("start", 0, "data export start: first unix timestamp to export")
-var endTimestamp = flag.Int("end", 0, "data export end: last unix timestamp to export")
+var startTimestamp = flag.Int64("start", 0,
+	"data export start: first unix timestamp to export")
+var endTimestamp = flag.Int64("end", 0,
+	"data export end: last unix timestamp to export")
+var exportFilename = flag.String("file", "defluxio-export.txt",
+	"path to file to use for export")
+var force = flag.Bool("force", false,
+	"force export, overwriting existing files")
 var cfg *defluxio.ExporterConfigurationData
 var dbclient *defluxio.DBClient
 
@@ -34,13 +41,16 @@ func init() {
 	if *startTimestamp >= *endTimestamp {
 		log.Fatal("start timestamp cannot be after end timestamp.")
 	}
+	if !*force {
+		if _, err := os.Stat(*exportFilename); err == nil {
+			log.Fatal("file ", *exportFilename, " exists - aborting.")
+		}
+	}
 	var err error
-	cfg, err = defluxio.LoadExporterConfiguration(*configFile)
-	if err != nil {
+	if cfg, err = defluxio.LoadExporterConfiguration(*configFile); err != nil {
 		log.Fatal("Error loading configuration: ", err.Error())
 	}
-	dbclient, err = defluxio.NewDBClient(&cfg.InfluxDB)
-	if err != nil {
+	if dbclient, err = defluxio.NewDBClient(&cfg.InfluxDB); err != nil {
 		log.Fatal("Cannot initialize database client:", err.Error())
 	}
 }
@@ -65,16 +75,15 @@ func main() {
 	// Hack for testing
 	// TODO: Replace with real time.Unix foo from commandline
 	timeReadings, terr := dbclient.GetFrequenciesBetween(*meterID,
-		time.Unix(1405525188, 0), time.Unix(1405588163, 0))
+		time.Unix(*startTimestamp, 0), time.Unix(*endTimestamp, 0))
 	if terr != nil {
 		log.Fatal("Failed to query database: ", terr.Error())
 	}
 	sort.Sort(defluxio.ByTimestamp(timeReadings))
 
-	path := "fooexport.txt"
-	tsve, eerr := defluxio.NewTsvExporter(path)
+	tsve, eerr := defluxio.NewTsvExporter(*exportFilename)
 	if eerr != nil {
-		log.Fatal("Cannot create exporter with file %s", path)
+		log.Fatal("Cannot create exporter with file %s", *exportFilename)
 	}
 	if eerr = tsve.ExportDataset(timeReadings); eerr != nil {
 		log.Fatal("Failed to export dataset: %s", eerr.Error())
