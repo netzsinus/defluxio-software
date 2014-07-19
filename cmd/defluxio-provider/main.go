@@ -114,6 +114,7 @@ func pusher() {
 		response, rerr := ioutil.ReadAll(resp.Body)
 		if rerr != nil {
 			log.Println("Error getting post result data: ", err.Error())
+			resp.Body.Close()
 			continue
 		}
 		if resp.StatusCode != http.StatusOK {
