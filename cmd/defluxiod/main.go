@@ -14,7 +14,7 @@ import (
 	"text/template"
 )
 
-var configFile = flag.String("config", "defluxio.conf", "configuration file")
+var configFile = flag.String("config", "defluxiod.conf", "configuration file")
 var Cfg *defluxio.ServerConfigurationData
 var templates *template.Template
 var dbclient *defluxio.DBClient
