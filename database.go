@@ -4,7 +4,7 @@ package defluxio
 
 import (
 	"fmt"
-	"github.com/influxdb/influxdb"
+	"github.com/influxdb/influxdb/client"
 	"log"
 	"net/http"
 	"time"
