@@ -4,7 +4,7 @@ package defluxio
 
 import (
 	"fmt"
-	"github.com/influxdb/influxdb/client"
+	influxdb "github.com/influxdb/influxdb/client"
 	"log"
 	"net/http"
 	"time"
@@ -28,7 +28,7 @@ func (a ByTimestamp) Less(i, j int) bool {
 }
 
 type DBClient struct {
-	client       *client.Client
+	client       *influxdb.Client
 	serverconfig *InfluxDBConfig
 }
 
