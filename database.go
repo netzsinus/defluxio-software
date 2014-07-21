@@ -28,7 +28,7 @@ func (a ByTimestamp) Less(i, j int) bool {
 }
 
 type DBClient struct {
-	client       *influxdb.Client
+	client       *client.Client
 	serverconfig *InfluxDBConfig
 }
 
