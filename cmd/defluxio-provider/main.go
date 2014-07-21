@@ -28,11 +28,6 @@ var readingChannel = make(chan float64)
 var extract_wg sync.WaitGroup
 var pusher_wg sync.WaitGroup
 
-type Reading struct {
-	Timestamp time.Time
-	Value     float64
-}
-
 type ErrorMessage struct {
 	Id      string
 	Message string
@@ -103,7 +98,7 @@ func pusher() {
 	for frequency := range readingChannel {
 		log.Println("Frequency: " + strconv.FormatFloat(frequency, 'f', 5, 32))
 		client := &http.Client{}
-		body := Reading{time.Now(), frequency}
+		body := defluxio.Reading{time.Now(), frequency}
 		bodyBytes, _ := json.Marshal(body)
 		reqUrl := fmt.Sprintf("%s/api/submit/%s", Cfg.Network.Host,
 			Cfg.API.Meter)
@@ -115,11 +110,11 @@ func pusher() {
 			log.Println("Error posting data: ", err.Error())
 			continue
 		}
-		defer resp.Body.Close()
 
 		response, rerr := ioutil.ReadAll(resp.Body)
 		if rerr != nil {
 			log.Println("Error getting post result data: ", err.Error())
+			resp.Body.Close()
 			continue
 		}
 		if resp.StatusCode != http.StatusOK {
@@ -132,6 +127,7 @@ func pusher() {
 				log.Println(resp.StatusCode, errorMessage.Id, ":", errorMessage.Message)
 			}
 		}
+		resp.Body.Close()
 	}
 }
 
