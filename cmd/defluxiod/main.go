@@ -7,8 +7,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/gonium/defluxio"
 	"github.com/gorilla/mux"
+	"github.com/netzsinus/defluxio-software"
 	"log"
 	"net/http"
 	"text/template"
@@ -28,6 +28,35 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 func serveImpressum(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	templates.ExecuteTemplate(w, "impressum", r.Host)
+}
+
+func serveMeter(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	type TemplateData struct {
+		Meters []defluxio.Meter
+	}
+	AvailableMeters := []defluxio.Meter{
+		{
+			Rank:     0,
+			ID:       "valid",
+			Key:      "valid",
+			Name:     "Valid",
+			Location: "Here.",
+		},
+		{
+			Rank:     1,
+			ID:       "valid",
+			Key:      "valid",
+			Name:     "Valid",
+			Location: "Here.",
+		},
+	}
+	//TODO: Merge the last readings from a cache object.
+	t := TemplateData{Meters: AvailableMeters}
+	err := templates.ExecuteTemplate(w, "meter", t)
+	if err != nil {
+		log.Println("executing meter template: ", err)
+	}
 }
 
 func init() {
@@ -59,6 +88,7 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", serveHome).Methods("GET")
 	r.HandleFunc("/impressum", serveImpressum).Methods("GET")
+	r.HandleFunc("/meter", serveMeter).Methods("GET")
 	r.HandleFunc("/api/submit/{meter}",
 		defluxio.MkSubmitReadingHandler(dbchannel, Cfg)).Methods("POST")
 	r.HandleFunc("/api/status", defluxio.ServerStatus).Methods("GET")

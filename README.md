@@ -1,8 +1,27 @@
-defluxio
-========
+Netzsinus software components
+=============================
 
-lat. defluxio - "die Abweichung"
+Prerequisites
+-------------
 
+Install Go > 1.3 and InfluxDB.
+
+## Installing InfluxDB
+
+You need to install the InfluxDB as outlined [on the influxdb
+website](http://influxdb.com/docs/v0.7/introduction/installation.html).
+to install the commandline interface.
+
+Afterwards, you can install the software components like this:
+
+	$ go install github.com/netzsinus/defluxio-software
+
+If you run into errors regarding other packages, please make sure you
+have *all* of the following version control systems installed: git,
+mercurial, bazaar and subversion.
+
+
+TODO: Clean up everything below.
 
 Web server components
 ---------------------
@@ -13,21 +32,6 @@ realtime updates to all attached browsers. It uses the
 the websocket part, the browser javascript uses JQuery and
 [JustGage](http://justgage.com/) as well as
 [Epoch](http://fastly.github.io/epoch/)for the eye candy.
-
-## Running 
-
-Once you have Go up and running, you can download, build and run the example
-using the following commands.
-
-    $ go get github.com/gorilla/websocket
-    $ go get github.com/gorilla/mux
-    $ go run *.go
-
-## Installing InfluxDB
-
-You need to install the InfluxDB as outlined [on the influxdb
-website](http://influxdb.com/docs/v0.7/introduction/installation.html).
-to install the commandline interface.
 
 
 
