@@ -44,6 +44,31 @@ func TestMeterValid(t *testing.T) {
 	}
 }
 
+func TestMeterEquality(t *testing.T) {
+	valid_meters := []Meter{
+		{
+			Rank:     0,
+			ID:       "valid",
+			Key:      "valid",
+			Name:     "Valid",
+			Location: "Here.",
+		},
+		{
+			Rank:     1,
+			ID:       "valid1jj",
+			Key:      "valid",
+			Name:     "Valid",
+			Location: "Here.",
+		},
+	}
+	if valid_meters[0] != valid_meters[0] {
+		t.Error("Same meter is assumed to be different")
+	}
+	if valid_meters[0] == valid_meters[1] {
+		t.Error("Different meters are assumed to be equal")
+	}
+}
+
 func TestMeterCollectionValid(t *testing.T) {
 	valid_meters := []Meter{
 		{

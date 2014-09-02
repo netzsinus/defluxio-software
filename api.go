@@ -10,11 +10,6 @@ import (
 	"time"
 )
 
-type Reading struct {
-	Timestamp time.Time
-	Value     float64
-}
-
 type APIClientErrorMessage struct {
 	Id      string
 	Message string
