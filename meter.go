@@ -5,12 +5,11 @@
 package defluxio
 
 type Meter struct {
-	Rank        uint16
-	ID          string
-	Key         string
-	Name        string
-	Location    string
-	LastReading Reading
+	Rank     uint16
+	ID       string
+	Key      string
+	Name     string
+	Location string
 }
 
 type MeterCollection struct {

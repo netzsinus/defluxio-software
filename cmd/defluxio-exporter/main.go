@@ -6,7 +6,7 @@ package main
 
 import (
 	"flag"
-	"github.com/gonium/defluxio"
+	"github.com/netzsinus/defluxio-software"
 	"log"
 	"os"
 	"sort"
@@ -15,6 +15,7 @@ import (
 )
 
 var configFile = flag.String("config", "defluxio-exporter.conf", "configuration file")
+var mkConfigFile = flag.Bool("genconfig", false, "generate an example configuration file")
 var meterID = flag.String("meter", "", "ID of the meter to query")
 var startTimestamp = flag.Int64("start", 0,
 	"data export start: first unix timestamp to export")
@@ -24,11 +25,20 @@ var exportFilename = flag.String("file", "defluxio-export.txt",
 	"path to file to use for export")
 var force = flag.Bool("force", false,
 	"force export, overwriting existing files")
-var cfg *defluxio.ExporterConfigurationData
+var cfg *defluxio.ExporterConfiguration
 var dbclient *defluxio.DBClient
 
 func init() {
 	flag.Parse()
+	if *mkConfigFile {
+		log.Println("Creating default configuration in file " + *configFile)
+		cfg := defluxio.MkDefaultExporterConfiguration()
+		err := cfg.Save(*configFile)
+		if err != nil {
+			log.Fatal("Failed to create default configuration:", err.Error())
+		}
+		os.Exit(0)
+	}
 	if strings.EqualFold(*meterID, "") {
 		log.Fatal("You must specify the meter ID (i.e. -meter=foometer)")
 	}

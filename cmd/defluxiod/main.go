@@ -11,11 +11,13 @@ import (
 	"github.com/netzsinus/defluxio-software"
 	"log"
 	"net/http"
+	"os"
 	"text/template"
 )
 
 var configFile = flag.String("config", "defluxiod.conf", "configuration file")
-var Cfg *defluxio.ServerConfigurationData
+var mkConfigFile = flag.Bool("genconfig", false, "generate an example configuration file")
+var Cfg *defluxio.ServerConfiguration
 var templates *template.Template
 var dbclient *defluxio.DBClient
 var dbchannel chan defluxio.MeterReading
@@ -35,24 +37,8 @@ func serveMeter(w http.ResponseWriter, r *http.Request) {
 	type TemplateData struct {
 		Meters []defluxio.Meter
 	}
-	AvailableMeters := []defluxio.Meter{
-		{
-			Rank:     0,
-			ID:       "valid",
-			Key:      "valid",
-			Name:     "Valid",
-			Location: "Here.",
-		},
-		{
-			Rank:     1,
-			ID:       "valid",
-			Key:      "valid",
-			Name:     "Valid",
-			Location: "Here.",
-		},
-	}
 	//TODO: Merge the last readings from a cache object.
-	t := TemplateData{Meters: AvailableMeters}
+	t := TemplateData{Meters: Cfg.Meters}
 	err := templates.ExecuteTemplate(w, "meter", t)
 	if err != nil {
 		log.Println("executing meter template: ", err)
@@ -61,6 +47,15 @@ func serveMeter(w http.ResponseWriter, r *http.Request) {
 
 func init() {
 	flag.Parse()
+	if *mkConfigFile {
+		log.Println("Creating default configuration in file " + *configFile)
+		cfg := defluxio.MkDefaultServerConfiguration()
+		err := cfg.Save(*configFile)
+		if err != nil {
+			log.Fatal("Failed to create default configuration:", err.Error())
+		}
+		os.Exit(0)
+	}
 	var loaderror error
 	Cfg, loaderror = defluxio.LoadServerConfiguration(*configFile)
 	if loaderror != nil {

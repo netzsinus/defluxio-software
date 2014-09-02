@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/gonium/defluxio"
+	"github.com/netzsinus/defluxio-software"
 	"github.com/tarm/goserial"
 	"io"
 	"io/ioutil"
@@ -14,6 +14,7 @@ import (
 	"math"
 	"math/rand"
 	"net/http"
+	"os"
 	"runtime"
 	"strconv"
 	"strings"
@@ -23,7 +24,8 @@ import (
 
 var simulationMode = flag.Bool("sim", false, "simulation mode (does not need measurement hardware")
 var configFile = flag.String("config", "defluxio-provider.conf", "configuration file")
-var Cfg *defluxio.ProviderConfigurationData
+var mkConfigFile = flag.Bool("genconfig", false, "generate an example configuration file")
+var Cfg *defluxio.ProviderConfiguration
 var readingChannel = make(chan float64)
 var extract_wg sync.WaitGroup
 var pusher_wg sync.WaitGroup
@@ -101,10 +103,10 @@ func pusher() {
 		body := defluxio.Reading{time.Now(), frequency}
 		bodyBytes, _ := json.Marshal(body)
 		reqUrl := fmt.Sprintf("%s/api/submit/%s", Cfg.Network.Host,
-			Cfg.API.Meter)
+			Cfg.Meter.ID)
 		req, err := http.NewRequest("POST", reqUrl, bytes.NewReader(bodyBytes))
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Add("X-API-Key", Cfg.API.Key)
+		req.Header.Add("X-API-Key", Cfg.Meter.Key)
 		resp, err := client.Do(req)
 		if err != nil {
 			log.Println("Error posting data: ", err.Error())
@@ -133,6 +135,15 @@ func pusher() {
 
 func init() {
 	flag.Parse()
+	if *mkConfigFile {
+		log.Println("Creating default configuration in file " + *configFile)
+		cfg := defluxio.MkDefaultProviderConfiguration()
+		err := cfg.Save(*configFile)
+		if err != nil {
+			log.Fatal("Failed to create default configuration:", err.Error())
+		}
+		os.Exit(0)
+	}
 	var loaderror error
 	Cfg, loaderror = defluxio.LoadProviderConfiguration(*configFile)
 	if loaderror != nil {

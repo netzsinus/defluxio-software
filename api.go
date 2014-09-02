@@ -5,7 +5,6 @@ package defluxio
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
 	"time"
@@ -65,7 +64,7 @@ func ServerStatus(w http.ResponseWriter, r *http.Request) {
 
 /* Accepts a new reading. Format: {"Timestamp":<ISO8601>,"Value":342.2}
  */
-func MkSubmitReadingHandler(dbchannel chan MeterReading, serverConfig *ServerConfigurationData) http.HandlerFunc {
+func MkSubmitReadingHandler(dbchannel chan MeterReading, serverConfig *ServerConfiguration) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		// extract and check credentials.
@@ -73,14 +72,20 @@ func MkSubmitReadingHandler(dbchannel chan MeterReading, serverConfig *ServerCon
 		vars := mux.Vars(r)
 		meterid := vars["meter"]
 		apikey := r.Header["X-Api-Key"][0]
-		credentials := fmt.Sprintf("%s:%s", meterid, apikey)
+		//credentials := fmt.Sprintf("%s:%s", meterid, apikey)
 		invalidCredentials := true
-		for _, key := range serverConfig.API.Keys {
-			if key == credentials {
+		for _, meter := range serverConfig.Meters {
+			if meter.ID == meterid && meter.Key == apikey {
 				invalidCredentials = false
 				break
 			}
 		}
+		//for _, key := range serverConfig.API.Keys {
+		//	if key == credentials {
+		//		invalidCredentials = false
+		//		break
+		//	}
+		//}
 		if invalidCredentials {
 			errormessage := APIClientErrorMessage{"invalidcredentials", "given credentials are not valid"}
 			errorbytes, _ := json.Marshal(errormessage)
