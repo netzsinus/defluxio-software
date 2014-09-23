@@ -29,9 +29,9 @@ type ReadingCache struct {
 	Cache *ring.Ring
 }
 
-func MakeReadingCache(size int) (r ReadingCache) {
+func MakeReadingCache(size uint32) (r ReadingCache) {
 	r = ReadingCache{
-		Cache: ring.New(size),
+		Cache: ring.New(int(size)),
 	}
 	return r
 }

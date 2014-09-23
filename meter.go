@@ -5,11 +5,13 @@
 package defluxio
 
 type Meter struct {
-	Rank     uint16
-	ID       string
-	Key      string
-	Name     string
-	Location string
+	Rank      uint16
+	ID        string
+	Key       string
+	Name      string
+	Location  string
+	Cache     ReadingCache `json:"-"` // do not export
+	CacheSize uint32
 }
 
 type MeterCollection struct {
@@ -22,6 +24,13 @@ func isEmpty(s string) bool {
 
 func (m *Meter) IsValid() bool {
 	return !isEmpty(m.ID) && !isEmpty(m.Key) && !isEmpty(m.Name) && !isEmpty(m.Location)
+}
+
+func (m *Meter) AppendReading(r Reading) {
+	if m.Cache.Cache == nil {
+		m.Cache = MakeReadingCache(m.CacheSize)
+	}
+	m.Cache.AddReading(r)
 }
 
 func intInSlice(i uint16, s []uint16) bool {

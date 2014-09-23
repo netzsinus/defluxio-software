@@ -8,6 +8,30 @@ import (
 	"testing"
 )
 
+func getValidMeters() (valid_meters []Meter) {
+	valid_meters = []Meter{
+		{
+			Rank:      0,
+			ID:        "valid",
+			Key:       "valid",
+			Name:      "Valid",
+			Location:  "Here.",
+			Cache:     MakeReadingCache(10),
+			CacheSize: 10,
+		},
+		{
+			Rank:      1,
+			ID:        "valid",
+			Key:       "valid",
+			Name:      "Valid",
+			Location:  "Here.",
+			Cache:     MakeReadingCache(10),
+			CacheSize: 10,
+		},
+	}
+	return valid_meters
+}
+
 func TestMeterValid(t *testing.T) {
 	valid := Meter{
 		ID:       "valid",
@@ -45,22 +69,7 @@ func TestMeterValid(t *testing.T) {
 }
 
 func TestMeterEquality(t *testing.T) {
-	valid_meters := []Meter{
-		{
-			Rank:     0,
-			ID:       "valid",
-			Key:      "valid",
-			Name:     "Valid",
-			Location: "Here.",
-		},
-		{
-			Rank:     1,
-			ID:       "valid1jj",
-			Key:      "valid",
-			Name:     "Valid",
-			Location: "Here.",
-		},
-	}
+	valid_meters := getValidMeters()
 	if valid_meters[0] != valid_meters[0] {
 		t.Error("Same meter is assumed to be different")
 	}
@@ -70,22 +79,7 @@ func TestMeterEquality(t *testing.T) {
 }
 
 func TestMeterCollectionValid(t *testing.T) {
-	valid_meters := []Meter{
-		{
-			Rank:     0,
-			ID:       "valid",
-			Key:      "valid",
-			Name:     "Valid",
-			Location: "Here.",
-		},
-		{
-			Rank:     1,
-			ID:       "valid",
-			Key:      "valid",
-			Name:     "Valid",
-			Location: "Here.",
-		},
-	}
+	valid_meters := getValidMeters()
 	mc0 := MeterCollection{Meters: valid_meters}
 	if !mc0.IsValid() {
 		t.Error("Meter Collection is not valid")
@@ -96,5 +90,14 @@ func TestMeterCollectionValid(t *testing.T) {
 	if mc1.IsValid() {
 		t.Error("Meter Collection was accepted although it was not valid")
 	}
+}
 
+func TestMeterCaching(t *testing.T) {
+	valid_meters := getValidMeters()
+	r1 := Reading{Value: 1.0}
+	valid_meters[0].AppendReading(r1)
+	last_reading, _ := valid_meters[0].Cache.LastReading()
+	if r1 != last_reading {
+		t.Error("Meter does not provide last reading correctly.")
+	}
 }
