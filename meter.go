@@ -10,7 +10,7 @@ type Meter struct {
 	Key       string
 	Name      string
 	Location  string
-	Cache     ReadingCache `json:"-"` // do not export
+	Cache     *ReadingCache `json:"-"` // do not export
 	CacheSize uint32
 }
 
@@ -27,9 +27,6 @@ func (m *Meter) IsValid() bool {
 }
 
 func (m *Meter) AppendReading(r Reading) {
-	if m.Cache.Cache == nil {
-		m.Cache = MakeReadingCache(m.CacheSize)
-	}
 	m.Cache.AddReading(r)
 }
 

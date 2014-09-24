@@ -134,6 +134,13 @@ func MkSubmitReadingHandler(dbchannel chan MeterReading, serverConfig *ServerCon
 			dbchannel <- meterReading
 		}
 
+		// Update the meter cache
+		for idx := range serverConfig.Meters {
+			if serverConfig.Meters[idx].ID == meterid {
+				serverConfig.Meters[idx].AppendReading(reading)
+				break
+			}
+		}
 		// finally: wrap everything again and forward update to all connected clients.
 		updateMessage, uerr := json.Marshal(reading)
 		if uerr != nil {

@@ -35,13 +35,12 @@ func serveImpressum(w http.ResponseWriter, r *http.Request) {
 func serveMeter(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	type TemplateData struct {
-		Meters []defluxio.Meter
+		Meters *[]defluxio.Meter
 	}
-	//TODO: Merge the last readings from a cache object.
-	t := TemplateData{Meters: Cfg.Meters}
+	t := TemplateData{Meters: &Cfg.Meters}
 	err := templates.ExecuteTemplate(w, "meter", t)
 	if err != nil {
-		log.Println("executing meter template: ", err)
+		log.Println("executing meter template: ", err.Error())
 	}
 }
 
@@ -60,6 +59,10 @@ func init() {
 	Cfg, loaderror = defluxio.LoadServerConfiguration(*configFile)
 	if loaderror != nil {
 		log.Fatal("Error loading configuration: ", loaderror.Error())
+	}
+	log.Printf("Configured meters are:")
+	for _, m := range Cfg.Meters {
+		log.Printf("* %s (%s)", m.ID, m.Name)
 	}
 	templates = template.Must(template.ParseGlob(Cfg.Assets.ViewPath + "/*"))
 	if Cfg.InfluxDB.Enabled {

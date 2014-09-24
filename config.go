@@ -6,6 +6,7 @@ package defluxio
 import (
 	"encoding/json"
 	"io/ioutil"
+	"time"
 )
 
 type InfluxDBConfig struct {
@@ -123,25 +124,34 @@ func (sc *ServerConfiguration) Save(configFile string) (err error) {
 }
 
 func LoadServerConfiguration(configFile string) (cfg *ServerConfiguration, err error) {
-	cfg = &ServerConfiguration{}
+	cfg = new(ServerConfiguration)
 	err = loadJSON(cfg, configFile)
+	if err == nil {
+		defaultReading := Reading{Value: 0.0, Timestamp: time.Now()}
+		for idx := range cfg.Meters {
+			cfg.Meters[idx].Cache = MakeReadingCache(cfg.Meters[idx].CacheSize)
+			cfg.Meters[idx].AppendReading(defaultReading)
+		}
+	}
 	return cfg, err
 }
 
 func MkDefaultServerConfiguration() (cfg ServerConfiguration) {
 	meter1 := Meter{
-		Rank:     0,
-		ID:       "meter1",
-		Key:      "secretkey1",
-		Name:     "Meter 1",
-		Location: "Somewhere",
+		Rank:      0,
+		ID:        "meter1",
+		Key:       "secretkey1",
+		Name:      "Meter 1",
+		Location:  "Somewhere",
+		CacheSize: 10,
 	}
 	meter2 := Meter{
-		Rank:     1,
-		ID:       "meter2",
-		Key:      "secretkey2",
-		Name:     "Meter 2",
-		Location: "Nowhere",
+		Rank:      1,
+		ID:        "meter2",
+		Key:       "secretkey2",
+		Name:      "Meter 2",
+		Location:  "Nowhere",
+		CacheSize: 10,
 	}
 
 	cfg = ServerConfiguration{

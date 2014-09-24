@@ -29,14 +29,16 @@ type ReadingCache struct {
 	Cache *ring.Ring
 }
 
-func MakeReadingCache(size uint32) (r ReadingCache) {
-	r = ReadingCache{
-		Cache: ring.New(int(size)),
-	}
+func MakeReadingCache(size uint32) (r *ReadingCache) {
+	r = new(ReadingCache)
+	r.Cache = ring.New(int(size))
 	return r
 }
 
 func (c *ReadingCache) AddReading(r Reading) {
+	if c.Cache == nil {
+		fmt.Printf("fooo!\n")
+	}
 	c.Cache.Value = r
 	c.Cache = c.Cache.Next()
 }

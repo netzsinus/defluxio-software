@@ -100,4 +100,13 @@ func TestMeterCaching(t *testing.T) {
 	if r1 != last_reading {
 		t.Error("Meter does not provide last reading correctly.")
 	}
+	r2 := Reading{Value: 2.0}
+	for i := 0; i < 100; i++ {
+		valid_meters[0].AppendReading(r1)
+	}
+	valid_meters[0].AppendReading(r2)
+	last_reading, _ = valid_meters[0].Cache.LastReading()
+	if r2 != last_reading {
+		t.Error("Meter does not provide last reading correctly after inserting some more readings.")
+	}
 }

@@ -26,8 +26,8 @@
 							<td>{{.Rank}}</td>
 							<td>{{.Name}}</td>
 							<td>{{.Location}}</td>
-							<td>n/a</td>
-							<td>n/a</td>
+							<td>{{.Cache.LastReading.Value}}</td>
+							<td>{{.Cache.LastReading.Timestamp}}</td>
 						</tr>
 						{{end}}
 					</table>
