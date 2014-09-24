@@ -97,14 +97,19 @@ func simulate_readings() {
 
 func pusher() {
 	defer pusher_wg.Done()
+	reqUrl := fmt.Sprintf("%s:%d/api/submit/%s",
+		Cfg.Network.Host,
+		Cfg.Network.Port,
+		Cfg.Meter.ID)
 	for frequency := range readingChannel {
 		log.Println("Frequency: " + strconv.FormatFloat(frequency, 'f', 5, 32))
 		client := &http.Client{}
 		body := defluxio.Reading{time.Now(), frequency}
 		bodyBytes, _ := json.Marshal(body)
-		reqUrl := fmt.Sprintf("%s/api/submit/%s", Cfg.Network.Host,
-			Cfg.Meter.ID)
 		req, err := http.NewRequest("POST", reqUrl, bytes.NewReader(bodyBytes))
+		if err != nil {
+			log.Fatal("Failed to compose submit request: ", err.Error())
+		}
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Add("X-API-Key", Cfg.Meter.Key)
 		resp, err := client.Do(req)
@@ -124,7 +129,8 @@ func pusher() {
 			var errorMessage ErrorMessage
 			err := decoder.Decode(&errorMessage)
 			if err != nil {
-				log.Println("Failed to decode error message: " + err.Error())
+				log.Println("Failed to decode error message: " + err.Error() +
+					", raw: " + string(response))
 			} else {
 				log.Println(resp.StatusCode, errorMessage.Id, ":", errorMessage.Message)
 			}

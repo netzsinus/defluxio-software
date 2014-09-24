@@ -102,7 +102,7 @@ func MkDefaultProviderConfiguration() (cfg ProviderConfiguration) {
 			Location: "Somewhere",
 		},
 		Network: NetworkConfig{
-			Host: "127.0.0.1",
+			Host: "http://127.0.0.1",
 			Port: 8080,
 		},
 		Device: DeviceConfig{
