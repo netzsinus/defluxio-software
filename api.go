@@ -6,7 +6,9 @@ package defluxio
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"log"
 	"net/http"
+	"sort"
 	"time"
 )
 
@@ -141,10 +143,23 @@ func MkSubmitReadingHandler(dbchannel chan MeterReading, serverConfig *ServerCon
 				break
 			}
 		}
+
+		// Push the last reading to the clients, but only for the active
+		// meter with the lowest rank. A meter is active if it has been
+		// sending data within the last five seconds. Therefore: Sort the
+		// meters by the last reading timestamp, then pick the one with the
+		// lowest rank. If the current reading has been sent by this meter,
+		// push the reading to the websocket clients.
+		// Note: This is a costly operation, but right now we don't have
+		// many meters. If the number of meters increases, change this
+		// algorithm.
+		sort.Sort(ByRank{serverConfig.Meters})
+		log.Println(serverConfig.Meters)
+
 		// finally: wrap everything again and forward update to all connected clients.
 		updateMessage, uerr := json.Marshal(reading)
 		if uerr != nil {
-			panic(uerr)
+			log.Printf("Cannot marshal update message for websocket consumers: ", uerr)
 		}
 		H.broadcast <- []byte(updateMessage)
 	})

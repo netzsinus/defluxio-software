@@ -27,7 +27,7 @@ type AssetConfig struct {
 }
 
 type ServerConfiguration struct {
-	Meters   []Meter
+	Meters   Meters
 	Assets   AssetConfig
 	Network  NetworkConfig
 	InfluxDB InfluxDBConfig
@@ -155,9 +155,9 @@ func MkDefaultServerConfiguration() (cfg ServerConfiguration) {
 	}
 
 	cfg = ServerConfiguration{
-		Meters: []Meter{
-			meter1,
-			meter2,
+		Meters: Meters{
+			&meter1,
+			&meter2,
 		},
 		Network: NetworkConfig{
 			Host: "127.0.0.1",

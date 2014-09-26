@@ -35,9 +35,9 @@ func serveImpressum(w http.ResponseWriter, r *http.Request) {
 func serveMeter(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	type TemplateData struct {
-		Meters *[]defluxio.Meter
+		Meters defluxio.Meters
 	}
-	t := TemplateData{Meters: &Cfg.Meters}
+	t := TemplateData{Meters: Cfg.Meters}
 	err := templates.ExecuteTemplate(w, "meter", t)
 	if err != nil {
 		log.Println("executing meter template: ", err.Error())

@@ -8,8 +8,8 @@ import (
 	"testing"
 )
 
-func getValidMeters() (valid_meters []Meter) {
-	valid_meters = []Meter{
+func getValidMeters() (valid_meters Meters) {
+	valid_meters = []*Meter{
 		{
 			Rank:      0,
 			ID:        "valid",
@@ -80,15 +80,12 @@ func TestMeterEquality(t *testing.T) {
 
 func TestMeterCollectionValid(t *testing.T) {
 	valid_meters := getValidMeters()
-	mc0 := MeterCollection{Meters: valid_meters}
-	if !mc0.IsValid() {
+	if !valid_meters.IsValid() {
 		t.Error("Meter Collection is not valid")
 	}
-
-	invalid_meters := append(valid_meters, valid_meters[0])
-	mc1 := MeterCollection{Meters: invalid_meters}
-	if mc1.IsValid() {
-		t.Error("Meter Collection was accepted although it was not valid")
+	duplicate_meters := append(valid_meters, valid_meters[0])
+	if duplicate_meters.IsValid() {
+		t.Error("Meter Collection was accepted although it contains a duplicate")
 	}
 }
 
