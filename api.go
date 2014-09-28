@@ -154,7 +154,7 @@ func MkSubmitReadingHandler(dbchannel chan MeterReading, serverConfig *ServerCon
 		// many meters. If the number of meters increases, change this
 		// algorithm.
 		sort.Sort(ByRank{serverConfig.Meters})
-		log.Println(serverConfig.Meters)
+		log.Println(serverConfig.Meters[0])
 
 		// finally: wrap everything again and forward update to all connected clients.
 		updateMessage, uerr := json.Marshal(reading)
