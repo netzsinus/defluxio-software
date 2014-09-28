@@ -18,16 +18,19 @@
 							<th>Rang</th>
 							<th>Name</th>
 							<th>Standort</th>
-							<th>Letzter Wert</th>
+							<th>Frequenz</th>
 							<th>Empfangen</th>
+							<th>Something</th>
 						</tr>
 						{{range .Meters}}
 						<tr>
 							<td>{{.Rank}}</td>
 							<td>{{.Name}}</td>
 							<td>{{.Location}}</td>
-							<td>{{.Cache.LastReading.Value}}</td>
-							<td>{{.Cache.LastReading.Timestamp}}</td>
+							<td>{{.Cache.LastReading.Value | doublethreedigits }}</td>
+							<td>{{.Cache.LastReading.Timestamp | tstotime }} &mdash;
+								{{.Cache.LastReading.Timestamp | tstodate }}</td>
+							<td>{{ dosomething }}</td>
 						</tr>
 						{{end}}
 					</table>

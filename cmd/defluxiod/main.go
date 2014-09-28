@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"text/template"
+	"time"
 )
 
 var configFile = flag.String("config", "defluxiod.conf", "configuration file")
@@ -64,7 +65,23 @@ func init() {
 	for _, m := range Cfg.Meters {
 		log.Printf("* %s (%s)", m.ID, m.Name)
 	}
-	templates = template.Must(template.ParseGlob(Cfg.Assets.ViewPath + "/*"))
+	funcMap := template.FuncMap{
+		"dosomething": func() string { return "done something" },
+		"doublethreedigits": func(f float64) string {
+			return fmt.Sprintf("%2.3f", f)
+		},
+		"tstodate": func(t time.Time) string {
+			return fmt.Sprintf("%d.%d.%d", t.Day(), t.Month(), t.Year())
+		},
+		"tstotime": func(t time.Time) string {
+			return fmt.Sprintf("%d:%d:%d", t.Hour(), t.Minute(), t.Second())
+		},
+	}
+	templates, loaderror = template.New("").Funcs(funcMap).ParseGlob(Cfg.Assets.ViewPath +
+		"/*")
+	if loaderror != nil {
+		log.Fatal("Cannot load templates: ", loaderror.Error())
+	}
 	if Cfg.InfluxDB.Enabled {
 		var err error
 		dbclient, err = defluxio.NewDBClient(&Cfg.InfluxDB)
