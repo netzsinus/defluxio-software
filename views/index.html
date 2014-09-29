@@ -124,8 +124,12 @@
 			</div>
 		</div>
 	</div> <!-- container -->
-  <script type="text/javascript">
-    var ws_endpoint = "ws://{{$}}/ws";
-  </script>
+	<script type="text/javascript">
+		var ws_endpoint = "ws://{{$}}/ws";
+		if (window.location.protocol == 'http:') {
+			console.log("connecting to ws:// instead of wss://")
+			ws_endpoint = "ws://{{$}}/ws";
+		}
+		</script>
 {{template "footer"}}
 {{end}}
