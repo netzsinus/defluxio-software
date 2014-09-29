@@ -154,13 +154,23 @@ func MkSubmitReadingHandler(dbchannel chan MeterReading, serverConfig *ServerCon
 		// many meters. If the number of meters increases, change this
 		// algorithm.
 		sort.Sort(ByRank{serverConfig.Meters})
-		log.Println(serverConfig.Meters[0])
 
-		// finally: wrap everything again and forward update to all connected clients.
-		updateMessage, uerr := json.Marshal(reading)
-		if uerr != nil {
-			log.Printf("Cannot marshal update message for websocket consumers: ", uerr)
+		for _, m := range serverConfig.Meters {
+			if b, _ := m.ActiveWithinLast(time.Second * 10); b {
+				// do all the handling for the "best" meter
+				if m.ID == meterid {
+					// The update we have received is from the best meter
+					log.Println("Received update from highest ranking meter", m.ID)
+					// wrap everything again and forward update to all connected clients.
+					updateMessage, uerr := json.Marshal(reading)
+					if uerr != nil {
+						log.Printf("Cannot marshal update message for websocket consumers: ", uerr)
+					}
+					H.broadcast <- []byte(updateMessage)
+				}
+				break // ok, handling is done, don't continue
+			}
 		}
-		H.broadcast <- []byte(updateMessage)
+
 	})
 }

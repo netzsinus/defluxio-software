@@ -7,6 +7,7 @@ defluxio-exporter
 defluxio-provider.conf
 defluxio-exporter.conf
 defluxiod.conf
+*.conf
 
 # Object files
 *.o
