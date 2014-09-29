@@ -7,6 +7,7 @@ package defluxio
 import (
 	"fmt"
 	"log"
+	"sort"
 	"time"
 )
 
@@ -22,6 +23,8 @@ type Meter struct {
 
 type Meters []*Meter
 
+var BestMeter *Meter
+
 //type MeterCollection struct {
 //	Meters []Meter
 //}
@@ -36,6 +39,27 @@ func (m *Meter) IsValid() bool {
 
 func (m *Meter) AppendReading(r Reading) {
 	m.Cache.AddReading(r)
+}
+
+func (mc Meters) StartBestMeterUpdater(timeout time.Duration) {
+	BestMeter = mc.GetBestMeter(timeout)
+	ticker := time.NewTicker(time.Second * timeout / 2)
+	go func() {
+		for _ = range ticker.C {
+			BestMeter = mc.GetBestMeter(timeout)
+		}
+	}()
+}
+
+func (mc Meters) GetBestMeter(timeout time.Duration) (m *Meter) {
+	sort.Sort(ByRank{mc})
+	for _, m := range mc {
+		if b, _ := m.ActiveWithinLast(time.Second * timeout); b {
+			// do all the handling for the "best" meter
+			return m
+		}
+	}
+	return nil
 }
 
 func (m *Meter) ActiveWithinLast(deadline time.Duration) (bool, error) {

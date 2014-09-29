@@ -65,6 +65,8 @@ func init() {
 	for _, m := range Cfg.Meters {
 		log.Printf("* %s (%s)", m.ID, m.Name)
 	}
+	log.Printf("Starting meter surveilance routine")
+	Cfg.Meters.StartBestMeterUpdater(Cfg.MeterTimeout)
 	funcMap := template.FuncMap{
 		"dosomething": func() string { return "done something" },
 		"doublethreedigits": func(f float64) string {

@@ -27,10 +27,11 @@ type AssetConfig struct {
 }
 
 type ServerConfiguration struct {
-	Meters   Meters
-	Assets   AssetConfig
-	Network  NetworkConfig
-	InfluxDB InfluxDBConfig
+	Meters       Meters
+	MeterTimeout time.Duration
+	Assets       AssetConfig
+	Network      NetworkConfig
+	InfluxDB     InfluxDBConfig
 }
 
 type DeviceConfig struct {
@@ -159,6 +160,7 @@ func MkDefaultServerConfiguration() (cfg ServerConfiguration) {
 			&meter1,
 			&meter2,
 		},
+		MeterTimeout: 10,
 		Network: NetworkConfig{
 			Host: "127.0.0.1",
 			Port: 8080,

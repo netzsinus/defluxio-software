@@ -30,8 +30,8 @@ func TestServerConfigSerialization(t *testing.T) {
 	//if !reflect.DeepEqual(sc, *sc2) {
 	//	t.Error("Pre-stored server configuration not equal to post-stored one")
 	//}
-	if !(sc.Network == sc2.Network && sc.Assets == sc2.Assets &&
-		sc.InfluxDB == sc2.InfluxDB) {
+	if !(sc.Network == sc2.Network && sc.MeterTimeout == sc2.MeterTimeout &&
+		sc.Assets == sc2.Assets && sc.InfluxDB == sc2.InfluxDB) {
 		t.Error("Pre-stored server configuration not equal to post-stored one")
 	}
 }
