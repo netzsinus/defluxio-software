@@ -1,11 +1,7 @@
 {
-	"ImportPath": "github.com/gonium/defluxio",
-	"GoVersion": "go1.3",
+	"ImportPath": "github.com/netzsinus/defluxio-software",
+	"GoVersion": "go1.4.1",
 	"Deps": [
-		{
-			"ImportPath": "code.google.com/p/gcfg",
-			"Rev": "c2d3050044d05357eaf6c3547249ba57c5e235cb"
-		},
 		{
 			"ImportPath": "github.com/gorilla/context",
 			"Rev": "14f550f51af52180c2eefed15e5fd18d63c0a64a"
@@ -19,8 +15,9 @@
 			"Rev": "efd7f76a14d91b4a8e9597306f554305ac9b0b9b"
 		},
 		{
-			"ImportPath": "github.com/influxdb/influxdb-go",
-			"Rev": "4046c4576d6a8695bdad213cad5247fc6fa11751"
+			"ImportPath": "github.com/influxdb/influxdb/client",
+			"Comment": "v0.8.6-132-g8049c34",
+			"Rev": "8049c34c7de9545f06b1e328087914edd202fbb1"
 		}
 	]
 }

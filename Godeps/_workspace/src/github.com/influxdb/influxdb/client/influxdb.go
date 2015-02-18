@@ -1,4 +1,4 @@
-package influxdb
+package client
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 const (
@@ -54,6 +55,10 @@ func getDefault(value, defaultValue string) string {
 		return defaultValue
 	}
 	return value
+}
+
+func New(config *ClientConfig) (*Client, error) {
+	return NewClient(config)
 }
 
 func NewClient(config *ClientConfig) (*Client, error) {
@@ -151,6 +156,22 @@ func (self *Client) get(url string) ([]byte, error) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	return body, err
+}
+
+func (self *Client) getWithVersion(url string) ([]byte, string, error) {
+	resp, err := self.httpClient.Get(url)
+	err = responseToError(resp, err, false)
+	if err != nil {
+		return nil, "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	version := resp.Header.Get("X-Influxdb-Version")
+	fields := strings.Fields(version)
+	if len(fields) > 2 {
+		return body, fields[1], err
+	}
+	return body, "", err
 }
 
 func (self *Client) listSomething(url string) ([]map[string]interface{}, error) {
@@ -333,7 +354,7 @@ type TimePrecision string
 
 const (
 	Second      TimePrecision = "s"
-	Millisecond TimePrecision = "m"
+	Millisecond TimePrecision = "ms"
 	Microsecond TimePrecision = "u"
 )
 
@@ -428,12 +449,9 @@ func (self *Client) queryCommon(query string, useNumber bool, precision ...TimeP
 		return nil, err
 	}
 	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
+
 	series := []*Series{}
-	decoder := json.NewDecoder(bytes.NewBuffer(data))
+	decoder := json.NewDecoder(resp.Body)
 	if useNumber {
 		decoder.UseNumber()
 	}
@@ -462,20 +480,13 @@ func (self *Client) AuthenticateClusterAdmin(username, password string) error {
 	return responseToError(resp, err, true)
 }
 
-func (self *Client) GetContinuousQueries() ([]map[string]interface{}, error) {
-	url := self.getUrlWithUserAndPass(fmt.Sprintf("/db/%s/continuous_queries", self.database), self.username, self.password)
-	return self.listSomething(url)
-}
-
-func (self *Client) DeleteContinuousQueries(id int) error {
-	url := self.getUrlWithUserAndPass(fmt.Sprintf("/db/%s/continuous_queries/%d", self.database, id), self.username, self.password)
-	resp, err := self.del(url)
-	return responseToError(resp, err, true)
-}
-
 type LongTermShortTermShards struct {
-	LongTerm  []*Shard `json:"longTerm"`
+	// Long term shards, (doesn't get populated for version >= 0.8.0)
+	LongTerm []*Shard `json:"longTerm"`
+	// Short term shards, (doesn't get populated for version >= 0.8.0)
 	ShortTerm []*Shard `json:"shortTerm"`
+	// All shards in the system (Long + Short term shards for version < 0.8.0)
+	All []*Shard `json:"-"`
 }
 
 type Shard struct {
@@ -483,21 +494,97 @@ type Shard struct {
 	EndTime   int64    `json:"endTime"`
 	StartTime int64    `json:"startTime"`
 	ServerIds []uint32 `json:"serverIds"`
+	SpaceName string   `json:"spaceName"`
+	Database  string   `json:"database"`
+}
+
+type ShardSpaceCollection struct {
+	ShardSpaces []ShardSpace
 }
 
 func (self *Client) GetShards() (*LongTermShortTermShards, error) {
 	url := self.getUrlWithUserAndPass("/cluster/shards", self.username, self.password)
-	body, err := self.get(url)
+	body, version, err := self.getWithVersion(url)
 	if err != nil {
 		return nil, err
 	}
+	return parseShards(body, version)
+}
+
+func isOrNewerThan(version, reference string) bool {
+	if version == "vdev" {
+		return true
+	}
+	majorMinor := strings.Split(version[1:], ".")[:2]
+	refMajorMinor := strings.Split(reference[1:], ".")[:2]
+	if majorMinor[0] > refMajorMinor[0] {
+		return true
+	}
+	if majorMinor[1] > refMajorMinor[1] {
+		return true
+	}
+	return majorMinor[1] == refMajorMinor[1]
+}
+
+func parseShards(body []byte, version string) (*LongTermShortTermShards, error) {
+	// strip the initial v in `v0.8.0` and split on the dots
+	if version != "" && isOrNewerThan(version, "v0.8") {
+		return parseNewShards(body)
+	}
 	shards := &LongTermShortTermShards{}
-	err = json.Unmarshal(body, shards)
+	err := json.Unmarshal(body, &shards)
 	if err != nil {
 		return nil, err
 	}
 
+	shards.All = make([]*Shard, len(shards.LongTerm)+len(shards.ShortTerm))
+	copy(shards.All, shards.LongTerm)
+	copy(shards.All[len(shards.LongTerm):], shards.ShortTerm)
 	return shards, nil
+}
+
+func parseNewShards(body []byte) (*LongTermShortTermShards, error) {
+	shards := []*Shard{}
+	err := json.Unmarshal(body, &shards)
+	if err != nil {
+		return nil, err
+	}
+
+	return &LongTermShortTermShards{All: shards}, nil
+}
+
+// Added to InfluxDB in 0.8.0
+func (self *Client) GetShardSpaces() ([]*ShardSpace, error) {
+	url := self.getUrlWithUserAndPass("/cluster/shard_spaces", self.username, self.password)
+	body, err := self.get(url)
+	if err != nil {
+		return nil, err
+	}
+	spaces := []*ShardSpace{}
+	err = json.Unmarshal(body, &spaces)
+	if err != nil {
+		return nil, err
+	}
+
+	return spaces, nil
+}
+
+// Added to InfluxDB in 0.8.0
+func (self *Client) DropShardSpace(database, name string) error {
+	url := self.getUrlWithUserAndPass(fmt.Sprintf("/cluster/shard_spaces/%s/%s", database, name), self.username, self.password)
+	_, err := self.del(url)
+	return err
+}
+
+// Added to InfluxDB in 0.8.0
+func (self *Client) CreateShardSpace(database string, space *ShardSpace) error {
+	url := self.getUrl(fmt.Sprintf("/cluster/shard_spaces/%s", database))
+	data, err := json.Marshal(space)
+	if err != nil {
+		return err
+	}
+	resp, err := self.httpClient.Post(url, "application/json", bytes.NewBuffer(data))
+	return responseToError(resp, err, true)
 }
 
 func (self *Client) DropShard(id uint32, serverIds []uint32) error {
@@ -509,4 +596,15 @@ func (self *Client) DropShard(id uint32, serverIds []uint32) error {
 	}
 	_, err = self.delWithBody(url, bytes.NewBuffer(body))
 	return err
+}
+
+// Added to InfluxDB in 0.8.2
+func (self *Client) UpdateShardSpace(database, name string, space *ShardSpace) error {
+	url := self.getUrl(fmt.Sprintf("/cluster/shard_spaces/%s/%s", database, name))
+	data, err := json.Marshal(space)
+	if err != nil {
+		return err
+	}
+	resp, err := self.httpClient.Post(url, "application/json", bytes.NewBuffer(data))
+	return responseToError(resp, err, true)
 }
