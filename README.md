@@ -1,6 +1,10 @@
 Netzsinus software components
 =============================
 
+[![Build Status](https://travis-ci.org/netzsinus/defluxio-software.svg?branch=master)](https://travis-ci.org/netzsinus/defluxio-software)
+
+Please note: This is an alpha release. Kittens might get harmed.
+
 Prerequisites
 -------------
 
