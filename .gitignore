@@ -2,6 +2,7 @@
 defluxio-provider
 defluxiod
 defluxio-exporter
+dist
 
 # configuration files
 defluxio-provider.conf
