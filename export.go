@@ -34,3 +34,24 @@ func (tsve *TsvExporter) ExportDataset(timeReadings []MeterReading) error {
 	}
 	return w.Flush()
 }
+
+type DailyTsvExporter struct {
+	BasePath string
+}
+
+func NewDailyTsvExporter(basepath string) (retval *DailyTsvExporter, err error) {
+	retval = new(DailyTsvExporter)
+	retval.BasePath = basepath
+	// Check if the base path really exists
+	if _, err := os.Stat(retval.BasePath); err != nil {
+		if os.IsNotExist(err) {
+			err = fmt.Errorf("Base path doesn't exist, %s", err)
+		} else {
+			err = fmt.Errorf("Base path stat error: %s", err)
+		}
+	}
+}
+
+func (dte *DailyTsvExporter) ExportDataset(timeReadings []MeterReading) (err error) {
+	//TODO
+}

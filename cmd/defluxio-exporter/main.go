@@ -82,8 +82,6 @@ func main() {
 	//		element.Reading.Value)
 	//}
 
-	// Hack for testing
-	// TODO: Replace with real time.Unix foo from commandline
 	timeReadings, terr := dbclient.GetFrequenciesBetween(*meterID,
 		time.Unix(*startTimestamp, 0), time.Unix(*endTimestamp, 0))
 	if terr != nil {
