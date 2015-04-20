@@ -6,12 +6,18 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/netzsinus/defluxio-software"
 	"log"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
+)
+
+const (
+	SecsPerDay int64 = 24 * 60 * 60
 )
 
 var configFile = flag.String("config", "defluxio-exporter.conf", "configuration file")
@@ -21,10 +27,11 @@ var startTimestamp = flag.Int64("start", 0,
 	"data export start: first unix timestamp to export")
 var endTimestamp = flag.Int64("end", 0,
 	"data export end: last unix timestamp to export")
-var exportFilename = flag.String("file", "defluxio-export.txt",
-	"path to file to use for export")
+var exportDirectory = flag.String("dir", ".", "path to use for export")
 var force = flag.Bool("force", false,
 	"force export, overwriting existing files")
+var verbose = flag.Bool("verbose", false,
+	"verbose logging")
 var cfg *defluxio.ExporterConfiguration
 var dbclient *defluxio.DBClient
 
@@ -51,9 +58,10 @@ func init() {
 	if *startTimestamp >= *endTimestamp {
 		log.Fatal("start timestamp cannot be after end timestamp.")
 	}
+	// TODO: Implement new check - now writing to a directory.
 	if !*force {
-		if _, err := os.Stat(*exportFilename); err == nil {
-			log.Fatal("file ", *exportFilename, " exists - aborting.")
+		if dir, err := IsDirectory(*exportDirectory); err != nil || !dir {
+			log.Fatal("directory ", *exportDirectory, " does not exist - aborting.")
 		}
 	}
 	var err error
@@ -65,39 +73,71 @@ func init() {
 	}
 }
 
-func main() {
-	log.Printf("Attempting to export from meter %s\n", *meterID)
-	//result, err := dbclient.GetLastFrequency(*meterID)
-	//if err != nil {
-	//	log.Fatal("Failed to query database: ", err.Error())
-	//}
-	//fmt.Printf("On %v, the frequency was recorded as %f\n",
-	//	result.Reading.Timestamp, result.Reading.Value)
-	//meterReadings, err := dbclient.GetLastFrequencies(*meterID, 10)
-	//if err != nil {
-	//	log.Fatal("Failed to query database: ", err.Error())
-	//}
-	//for _, element := range meterReadings {
-	//	fmt.Printf("%v: %f\n", element.Reading.Timestamp,
-	//		element.Reading.Value)
-	//}
+func IsDirectory(path string) (bool, error) {
+	if fileInfo, err := os.Stat(path); err != nil {
+		return false, err
+	} else {
+		return fileInfo.IsDir(), nil
+	}
+}
 
-	// Hack for testing
-	// TODO: Replace with real time.Unix foo from commandline
-	timeReadings, terr := dbclient.GetFrequenciesBetween(*meterID,
-		time.Unix(*startTimestamp, 0), time.Unix(*endTimestamp, 0))
-	if terr != nil {
-		log.Fatal("Failed to query database: ", terr.Error())
+func getCanonicalFilename(ts int64) string {
+	date := time.Unix(ts, 0)
+	filename := fmt.Sprintf("%04d%02d%02d.txt", date.Year(), date.Month(), date.Day())
+	return filepath.Join(*exportDirectory, filename)
+}
+
+func getStartOfDayTimestamp(ts int64) int64 {
+	date := time.Unix(ts, 0)
+	return time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0,
+		time.UTC).Unix()
+}
+
+func getEndOfDayTimestamp(ts int64) int64 {
+	return getStartOfDayTimestamp(ts) + SecsPerDay - 1
+}
+
+func exportRange(start int64, end int64, filename string) (err error) {
+	if !*force {
+		if _, err := os.Stat(filename); err == nil {
+			if *verbose {
+				log.Printf("File %s already exists - skipping.", filename)
+			}
+			return err
+		}
+	}
+	timeReadings, err := dbclient.GetFrequenciesBetween(*meterID,
+		time.Unix(start, 0), time.Unix(end, 0))
+	if err != nil {
+		err = fmt.Errorf("Failed to query database: ", err.Error())
+		return
 	}
 	sort.Sort(defluxio.ByTimestamp(timeReadings))
 
-	tsve, eerr := defluxio.NewTsvExporter(*exportFilename)
-	if eerr != nil {
-		log.Fatal("Cannot create exporter with file %s", *exportFilename)
-	}
-	if eerr = tsve.ExportDataset(timeReadings); eerr != nil {
-		log.Fatal("Failed to export dataset: %s", eerr.Error())
+	log.Printf("Exporting %d readings [%d, %d] into file %s",
+		len(timeReadings), start, end, filename)
+
+	if tsve, err := defluxio.NewTsvExporter(filename); err != nil {
+		return fmt.Errorf("Cannot create exporter for file %s ", filename)
 	} else {
-		log.Printf("Export finished successfully.")
+		if err = tsve.ExportDataset(timeReadings); err != nil {
+			return fmt.Errorf("Failed to export dataset: %s ", err.Error())
+		}
 	}
+	return
+}
+
+func main() {
+	if *verbose {
+		log.Printf("Attempting to export from meter %s\n", *meterID)
+	}
+
+	for ts := getStartOfDayTimestamp(*startTimestamp); ts < getEndOfDayTimestamp(*endTimestamp); ts += SecsPerDay {
+		exportRange(
+			getStartOfDayTimestamp(ts),
+			getEndOfDayTimestamp(ts),
+			getCanonicalFilename(ts),
+		)
+	}
+
 }
