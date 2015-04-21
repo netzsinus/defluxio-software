@@ -28,10 +28,9 @@ var startTimestamp = flag.Int64("start", 0,
 var endTimestamp = flag.Int64("end", 0,
 	"data export end: last unix timestamp to export")
 var exportDirectory = flag.String("dir", ".", "path to use for export")
-var force = flag.Bool("force", false,
-	"force export, overwriting existing files")
-var verbose = flag.Bool("verbose", false,
-	"verbose logging")
+var force = flag.Bool("force", false, "force export, overwriting existing files")
+var verbose = flag.Bool("verbose", false, "verbose logging")
+var lastday = flag.Bool("lastday", false, "do not export to the given end timestamp but up until one day before (midnight) - cron use.")
 var cfg *defluxio.ExporterConfiguration
 var dbclient *defluxio.DBClient
 
@@ -130,6 +129,14 @@ func exportRange(start int64, end int64, filename string) (err error) {
 func main() {
 	if *verbose {
 		log.Printf("Attempting to export from meter %s\n", *meterID)
+	}
+
+	// Cron usage: In "lastday" mode, subtract a day from the end date.
+	// The reasoning behind this is that a cronjob can use the date +%s
+	// command to get the current timestamp and we export only up to the
+	// day before - the current day is not yet fully passed.
+	if *lastday {
+		*endTimestamp -= SecsPerDay
 	}
 
 	for ts := getStartOfDayTimestamp(*startTimestamp); ts < getEndOfDayTimestamp(*endTimestamp); ts += SecsPerDay {
