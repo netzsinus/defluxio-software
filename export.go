@@ -23,7 +23,7 @@ const (
 # human-readable explanation of the license.
 #
 # Generated on {{.GenerationDate}}
-timestamp	reading
+#timestamp	reading
 `
 )
 
