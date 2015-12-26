@@ -33,6 +33,16 @@ func serveImpressum(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "impressum", r.Host)
 }
 
+func serveProjekt(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	templates.ExecuteTemplate(w, "projekt", r.Host)
+}
+
+func serveDaten(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	templates.ExecuteTemplate(w, "daten", r.Host)
+}
+
 func serveMeter(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	type TemplateData struct {
@@ -105,6 +115,8 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", serveHome).Methods("GET")
 	r.HandleFunc("/impressum", serveImpressum).Methods("GET")
+	r.HandleFunc("/projekt", serveProjekt).Methods("GET")
+	r.HandleFunc("/daten", serveDaten).Methods("GET")
 	r.HandleFunc("/meter", serveMeter).Methods("GET")
 	r.HandleFunc("/api/submit/{meter}",
 		defluxio.MkSubmitReadingHandler(dbchannel, Cfg)).Methods("POST")

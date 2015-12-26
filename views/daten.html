@@ -1,0 +1,40 @@
+{{define "daten"}}
+  {{template "header"}}
+  <div class="container-fluid">
+    <a name="frequenzmessdaten"></a>
+    <div class="row center-block">
+      <div class="col-md-12 vcenter">
+					<h3>
+						<i class="glyphicon glyphicon-book right-buffer"></i>
+						Archiv der Frequenzmessdaten
+					</h3>
+			</div>
+		</div>
+    <div class="row center-block top-buffer">
+			<div class="col-md-1 vcenter pull-left"></div>
+			<div class="col-md-10 vcenter">
+				<p>Unter <a
+					href="http://data.netzsin.us">http://data.netzsin.us</a>
+				findest Du das Archiv der Frequenzmessdaten. Derzeit wird nur
+				ein Sensor exportiert, in Zukunft sollen die Datensätze aller
+				Sensoren exportiert werden.</p>
+
+				<p>Für nichtkommerzielle Anwendungen können die Daten frei
+				verwendet werden,
+				TODO: Genaue Lizenz
+				<p>
+				
+				<p>Die Daten liegen im Textformat vor und können einfach mit
+				wget heruntergeladen werden:</p>
+				<p>
+				<pre>$ wget -r http://data.netzsin.us</pre>
+				</p>
+				<p>Die bislang entstandenen Analysescripte sind
+				<a href="https://github.com/netzsinus/defluxio-analysis">auf der Netsin.us Github-Seite</a>
+				verfügbar. Wenn Du eine coole Analyse entwickelt hast, schicke
+				bitte eine Mail an Mathias (md@gonium.net).</p>
+			</div>
+		<div class="col-md-1 vcenter pull-right"></div>
+	</div>
+	{{template "footer"}}
+{{end}}
