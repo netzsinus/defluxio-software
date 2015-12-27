@@ -19,12 +19,39 @@
 				ein Sensor exportiert, in Zukunft sollen die Datensätze aller
 				Sensoren exportiert werden.</p>
 
-				<p>Für nichtkommerzielle Anwendungen können die Daten frei
-				verwendet werden,
-				TODO: Genaue Lizenz
-				<p>
+				<p>Die Messdaten unterliegen der <a
+					href="http://opendatacommons.org/licenses/odbl/summary/">ODC
+					Open Database Lizenz</a>. Pro Messtag wird eine Datei mit
+				folgendem Format generiert:<p>
+				<p><pre>
+# The https://netzsin.us grid frequency measurements are 
+# (c) Mathias Dalheimer, <md@gonium.net>.
+#
+# This database is made available under the Open Database License:
+#   http://opendatacommons.org/licenses/odbl/1.0/.
+# Any rights in individual contents of the database are licensed under
+# the Database Contents License:
+#   http://opendatacommons.org/licenses/dbcl/1.0/
+# Please see http://opendatacommons.org/licenses/odbl/summary/ for a
+# human-readable explanation of the license.
+#
+# Generated on 2015-04-23 12:52:55.549436393 +0000 UTC
+#timestamp	reading
+1405468800	50.005638
+1405468802	50.003479
+1405468804	50.006439
+1405468806	50.005501
+1405468808	50.005428
+1405468810	50.001591
+1405468812	49.996689
+1405468814	49.993832
+1405468816	49.987782
+1405468818	49.984360
+1405468820	49.982029
+				</pre></p>
 				
-				<p>Die Daten liegen im Textformat vor und können einfach mit
+				<p>In jeder Zeile steht zunächst ein Unix-Timestamp (UTC), die
+				gemessene Frequenz steht dahinter. Die Daten können einfach mit
 				wget heruntergeladen werden:</p>
 				<p>
 				<pre>$ wget -r http://data.netzsin.us</pre>
