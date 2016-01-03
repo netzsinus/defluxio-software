@@ -1,6 +1,9 @@
 {
 	"ImportPath": "github.com/netzsinus/defluxio-software",
-	"GoVersion": "go1.4.1",
+	"GoVersion": "go1.5.1",
+	"Packages": [
+		"./..."
+	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/gorilla/context",
@@ -18,6 +21,10 @@
 			"ImportPath": "github.com/influxdb/influxdb/client",
 			"Comment": "v0.8.6-132-g8049c34",
 			"Rev": "8049c34c7de9545f06b1e328087914edd202fbb1"
+		},
+		{
+			"ImportPath": "github.com/tarm/goserial",
+			"Rev": "b3440c3c63556c3fd67e915be3b92195bc70294a"
 		}
 	]
 }
