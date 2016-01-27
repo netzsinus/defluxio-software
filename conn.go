@@ -31,6 +31,9 @@ const (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	    },
 }
 
 // connection is an middleman between the websocket connection and the hub.
@@ -99,6 +102,7 @@ func ServeWs(w http.ResponseWriter, r *http.Request) {
 	}
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
+		log.Println("Error upgrading connection: ", err);
 		if _, ok := err.(websocket.HandshakeError); !ok {
 			log.Println(err)
 		}
