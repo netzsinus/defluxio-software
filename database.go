@@ -4,9 +4,8 @@ package defluxio
 
 import (
 	"fmt"
-	influxdb "github.com/influxdb/influxdb/client"
+	"github.com/influxdata/influxdb/client/v2"
 	"log"
-	"net/http"
 	"time"
 )
 
@@ -28,72 +27,104 @@ func (a ByTimestamp) Less(i, j int) bool {
 }
 
 type DBClient struct {
-	client       *influxdb.Client
+	client       client.Client
 	serverconfig *InfluxDBConfig
 }
 
 func NewDBClient(serverConfig *InfluxDBConfig) (*DBClient, error) {
 	retval := new(DBClient)
 	var err error
-	retval.client, err = influxdb.NewClient(&influxdb.ClientConfig{
-		Host: fmt.Sprintf("%s:%d", serverConfig.Host,
+	retval.client, err = client.NewHTTPClient(client.HTTPConfig{
+		Addr: fmt.Sprintf("http://%s:%d", serverConfig.Host,
 			serverConfig.Port),
-		Username:   serverConfig.User,
-		Password:   serverConfig.Pass,
-		Database:   serverConfig.Database,
-		HttpClient: http.DefaultClient,
+		Username: serverConfig.User,
+		Password: serverConfig.Pass,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Cannot create InfluxDB client: %s", err.Error())
 	}
-	retval.client.DisableCompression()
+
 	// Save config for later use
 	retval.serverconfig = serverConfig
 	return retval, nil
 }
 
 func (dbc DBClient) MkDBPusher(dbchannel chan MeterReading) (func(), error) {
-	log.Println("Getting list of databases.")
-	dbs, err := dbc.client.GetDatabaseList()
+	log.Println("Getting list of databases:")
+	response, err := dbc.client.Query(
+		client.Query{
+			Command:  "SHOW DATABASES",
+			Database: dbc.serverconfig.Database,
+		})
 	if err != nil {
-		log.Println("acquired: ", len(dbs))
-
-		return nil, fmt.Errorf("Cannot retrieve list of InfluxDB databases: %s", err.Error())
+		log.Fatal(err)
 	}
+	if err == nil && response.Error() != nil {
+		return nil, fmt.Errorf("Cannot retrieve list of InfluxDB databases: %s", response.Error())
+	}
+	log.Printf("Show databases response: %v", response.Results)
 	foundDatabase := false
-	for idx := range dbs {
-		name := dbs[idx]["name"]
-		log.Printf("found database %s", name)
-		if name == dbc.serverconfig.Database {
-			foundDatabase = true
-		}
-	}
-	if !foundDatabase {
-		log.Printf("Did not find database %s - attempting to create it",
-			dbc.serverconfig.Database)
-		if err := dbc.client.CreateDatabase(dbc.serverconfig.Database); err != nil {
-			return nil, fmt.Errorf("Failed to create database %s", dbc.serverconfig.Database)
+	// holy shit this is ugly
+	for _, result := range response.Results {
+		for _, row := range result.Series {
+			if row.Name == "databases" {
+				for _, values := range row.Values {
+					for _, database := range values {
+						log.Printf("found database: %s", database)
+						if database == dbc.serverconfig.Database {
+							foundDatabase = true
+						}
+					}
+				}
+			}
 		}
 	}
 
+	if !foundDatabase {
+		log.Fatalf("Did not find database \"%s\" - please create it",
+			dbc.serverconfig.Database)
+	}
 	return func() {
 		for {
+			log.Printf("Not implemented: Push1 callback")
+			_, ok := <-dbchannel
 			meterreading, ok := <-dbchannel
 			if !ok {
 				log.Fatal("Cannot read from internal channel - aborting")
 			}
-			//log.Printf("Pushing reading %v", meterreading.Reading)
-			series := &influxdb.Series{
-				Name:    meterreading.MeterID,
-				Columns: []string{"time", "frequency"},
-				Points: [][]interface{}{
-					[]interface{}{meterreading.Reading.Timestamp.Unix() * 1000,
-						meterreading.Reading.Value},
-				},
+			log.Printf("Pushing reading %v", meterreading.Reading)
+			// Create a new point batch
+			bp, _ := client.NewBatchPoints(client.BatchPointsConfig{
+				Database:  "frequency",
+				Precision: "ms",
+			})
+
+			// Create a point and add to batch
+			tags := map[string]string{"meterid": meterreading.MeterID}
+			fields := map[string]interface{}{
+				"value":     meterreading.Reading.Value,
+				"timestamp": meterreading.Reading.Timestamp,
 			}
-			if err := dbc.client.WriteSeries([]*influxdb.Series{series}); err != nil {
-				log.Printf("Failed to store data: %s", err)
+			pt, err := client.NewPoint("frequency", tags, fields, time.Now())
+			if err != nil {
+				fmt.Println("Error: ", err.Error())
 			}
+			bp.AddPoint(pt)
+
+			// Write the batch
+			dbc.client.Write(bp)
+
+			//series := &influxdb.Series{
+			//	Name:    meterreading.MeterID,
+			//	Columns: []string{"time", "frequency"},
+			//	Points: [][]interface{}{
+			//		[]interface{}{meterreading.Reading.Timestamp.Unix() * 1000,
+			//			meterreading.Reading.Value},
+			//	},
+			//}
+			//if err := dbc.client.WriteSeries([]*influxdb.Series{series}); err != nil {
+			//	log.Printf("Failed to store data: %s", err)
+			//}
 		}
 	}, nil
 }
@@ -112,34 +143,37 @@ func (dbc DBClient) points2meterreadings(name string,
 
 func (dbc DBClient) GetFrequenciesBetween(meterID string,
 	start time.Time, end time.Time) (retval []MeterReading, err error) {
-	querystr := fmt.Sprintf("select time, frequency from %s where time > %ds and time < %ds", meterID, start.Unix(), end.Unix())
-	series, err := dbc.client.Query(querystr)
-	if err != nil {
-		return retval, fmt.Errorf("Failed query: %s", err.Error())
-	}
-	if len(series) == 0 {
-		return retval, fmt.Errorf("No dataset received from database.")
-	}
-	// Debug: Print raw data points
-	//fmt.Printf("%#v\n", series[0].Points)
-	retval = dbc.points2meterreadings(series[0].Name, series[0].Points)
-	return retval, nil
+	log.Printf("GetFrequenciesBetween not implemented!")
+	return nil, nil
+	//querystr := fmt.Sprintf("select time, frequency from %s where time > %ds and time < %ds", meterID, start.Unix(), end.Unix())
+	//series, err := dbc.client.Query(querystr)
+	//if err != nil {
+	//	return retval, fmt.Errorf("Failed query: %s", err.Error())
+	//}
+	//if len(series) == 0 {
+	//	return retval, fmt.Errorf("No dataset received from database.")
+	//}
+	//// Debug: Print raw data points
+	////fmt.Printf("%#v\n", series[0].Points)
+	//retval = dbc.points2meterreadings(series[0].Name, series[0].Points)
+	//return retval, nil
 }
 
 func (dbc DBClient) GetLastFrequencies(meterID string, amount int) ([]MeterReading, error) {
 	retval := []MeterReading{}
-	querystr := fmt.Sprintf("select time, frequency from %s limit %d",
-		meterID, amount)
-	series, err := dbc.client.Query(querystr)
-	if err != nil {
-		return retval, fmt.Errorf("Failed query: %s", err.Error())
-	}
-	if len(series[0].Points) != amount {
-		return retval, fmt.Errorf("Received invalid number of readings: Expected %d, got ", len(series))
-	}
-	// Debug: Print raw data points
-	//fmt.Printf("%#v\n", series[0].Points)
-	retval = dbc.points2meterreadings(series[0].Name, series[0].Points)
+	//querystr := fmt.Sprintf("select time, frequency from %s limit %d",
+	//	meterID, amount)
+	//series, err := dbc.client.Query(querystr)
+	//if err != nil {
+	//	return retval, fmt.Errorf("Failed query: %s", err.Error())
+	//}
+	//if len(series[0].Points) != amount {
+	//	return retval, fmt.Errorf("Received invalid number of readings: Expected %d, got ", len(series))
+	//}
+	//// Debug: Print raw data points
+	////fmt.Printf("%#v\n", series[0].Points)
+	//retval = dbc.points2meterreadings(series[0].Name, series[0].Points)
+	log.Printf("GerLastFrequencies not implemented")
 	return retval, nil
 }
 
