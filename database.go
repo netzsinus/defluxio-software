@@ -3,6 +3,7 @@
 package defluxio
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/influxdata/influxdb/client/v2"
 	"log"
@@ -86,16 +87,18 @@ func (dbc DBClient) MkDBPusher(dbchannel chan MeterReading) (func(), error) {
 	}
 	return func() {
 		for {
-			log.Printf("Not implemented: Push1 callback")
 			_, ok := <-dbchannel
 			meterreading, ok := <-dbchannel
 			if !ok {
 				log.Fatal("Cannot read from internal channel - aborting")
 			}
 			log.Printf("Pushing reading %v", meterreading.Reading)
+
+			// TODO: At the moment, each value is written individually.
+			// A batched transfer (e.g. all five seconds) would rock.
 			// Create a new point batch
 			bp, _ := client.NewBatchPoints(client.BatchPointsConfig{
-				Database:  "frequency",
+				Database:  dbc.serverconfig.Database,
 				Precision: "ms",
 			})
 
@@ -103,7 +106,7 @@ func (dbc DBClient) MkDBPusher(dbchannel chan MeterReading) (func(), error) {
 			tags := map[string]string{"meterid": meterreading.MeterID}
 			fields := map[string]interface{}{
 				"value":     meterreading.Reading.Value,
-				"timestamp": meterreading.Reading.Timestamp,
+				"timestamp": meterreading.Reading.Timestamp.Unix(),
 			}
 			pt, err := client.NewPoint("frequency", tags, fields, time.Now())
 			if err != nil {
@@ -130,50 +133,59 @@ func (dbc DBClient) MkDBPusher(dbchannel chan MeterReading) (func(), error) {
 }
 
 func (dbc DBClient) points2meterreadings(name string,
-	points [][]interface{}) (retval []MeterReading) {
-	for _, val := range points {
-		timestamp := time.Unix(0, int64(val[0].(float64))*
-			int64(time.Millisecond))
-		frequency := val[2].(float64)
-		//fmt.Printf("timestamp %v: %f\n", timestamp, frequency)
-		retval = append(retval, MeterReading{name, Reading{timestamp, frequency}})
+	res []client.Result) (retval []MeterReading) {
+	for _, row := range res[0].Series {
+		for _, v := range row.Values {
+			json_timestamp := v[1].(json.Number)
+			int_timestamp, _ := json_timestamp.Int64()
+			timestamp := time.Unix(int_timestamp, 0)
+			json_freq := v[2].(json.Number)
+			freq, _ := json_freq.Float64()
+			log.Printf("T: %d, F: %.3f", int_timestamp, freq)
+			retval = append(retval, MeterReading{name, Reading{timestamp, freq}})
+		}
 	}
+
 	return retval
 }
 
 func (dbc DBClient) GetFrequenciesBetween(meterID string,
 	start time.Time, end time.Time) (retval []MeterReading, err error) {
-	log.Printf("GetFrequenciesBetween not implemented!")
-	return nil, nil
-	//querystr := fmt.Sprintf("select time, frequency from %s where time > %ds and time < %ds", meterID, start.Unix(), end.Unix())
-	//series, err := dbc.client.Query(querystr)
-	//if err != nil {
-	//	return retval, fmt.Errorf("Failed query: %s", err.Error())
-	//}
-	//if len(series) == 0 {
-	//	return retval, fmt.Errorf("No dataset received from database.")
-	//}
-	//// Debug: Print raw data points
-	////fmt.Printf("%#v\n", series[0].Points)
-	//retval = dbc.points2meterreadings(series[0].Name, series[0].Points)
-	//return retval, nil
+	querystr := fmt.Sprintf("select timestamp, value from frequency where meterid = '%s' and timestamp > %d and timestamp < %d", meterID, start.Unix(), end.Unix())
+	//log.Printf("Running query >%s<", querystr)
+	q := client.Query{
+		Command:  querystr,
+		Database: dbc.serverconfig.Database,
+	}
+	if response, err := dbc.client.Query(q); err == nil {
+		if response.Error() != nil {
+			log.Printf("Failed to run query: %s", response.Error())
+			return nil, response.Error()
+		}
+		retval = dbc.points2meterreadings(meterID, response.Results)
+	} else {
+		log.Printf("Failed to run query: %s", err.Error())
+	}
+	return retval, nil
 }
 
 func (dbc DBClient) GetLastFrequencies(meterID string, amount int) ([]MeterReading, error) {
 	retval := []MeterReading{}
-	//querystr := fmt.Sprintf("select time, frequency from %s limit %d",
-	//	meterID, amount)
-	//series, err := dbc.client.Query(querystr)
-	//if err != nil {
-	//	return retval, fmt.Errorf("Failed query: %s", err.Error())
-	//}
-	//if len(series[0].Points) != amount {
-	//	return retval, fmt.Errorf("Received invalid number of readings: Expected %d, got ", len(series))
-	//}
-	//// Debug: Print raw data points
-	////fmt.Printf("%#v\n", series[0].Points)
-	//retval = dbc.points2meterreadings(series[0].Name, series[0].Points)
-	log.Printf("GerLastFrequencies not implemented")
+	querystr := fmt.Sprintf("select timestamp, value from frequency where meterid= '%s' limit %d", meterID, amount)
+	log.Printf("Running query >%s<", querystr)
+	q := client.Query{
+		Command:  querystr,
+		Database: dbc.serverconfig.Database,
+	}
+	if response, err := dbc.client.Query(q); err == nil {
+		if response.Error() != nil {
+			log.Printf("Failed to run query: %s", response.Error())
+			return nil, response.Error()
+		}
+		retval = dbc.points2meterreadings(meterID, response.Results)
+	} else {
+		log.Printf("Failed to run query: %s", err.Error())
+	}
 	return retval, nil
 }
 
