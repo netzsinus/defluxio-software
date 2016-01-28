@@ -5,8 +5,6 @@ pkg
 defluxio-provider.conf
 defluxio-exporter.conf
 defluxiod.conf
-*.conf
-
 
 #Mac
 .DS_Store
