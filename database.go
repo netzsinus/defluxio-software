@@ -92,7 +92,7 @@ func (dbc DBClient) MkDBPusher(dbchannel chan MeterReading) (func(), error) {
 			if !ok {
 				log.Fatal("Cannot read from internal channel - aborting")
 			}
-			log.Printf("Pushing reading %v", meterreading.Reading)
+			//log.Printf("Pushing reading %v", meterreading.Reading)
 
 			// TODO: At the moment, each value is written individually.
 			// A batched transfer (e.g. all five seconds) would rock.
@@ -108,7 +108,7 @@ func (dbc DBClient) MkDBPusher(dbchannel chan MeterReading) (func(), error) {
 				"value":     meterreading.Reading.Value,
 				"timestamp": meterreading.Reading.Timestamp.Unix(),
 			}
-			pt, err := client.NewPoint("frequency", tags, fields, time.Now())
+			pt, err := client.NewPoint(dbc.serverconfig.Database, tags, fields, time.Now())
 			if err != nil {
 				fmt.Println("Error: ", err.Error())
 			}
@@ -117,17 +117,6 @@ func (dbc DBClient) MkDBPusher(dbchannel chan MeterReading) (func(), error) {
 			// Write the batch
 			dbc.client.Write(bp)
 
-			//series := &influxdb.Series{
-			//	Name:    meterreading.MeterID,
-			//	Columns: []string{"time", "frequency"},
-			//	Points: [][]interface{}{
-			//		[]interface{}{meterreading.Reading.Timestamp.Unix() * 1000,
-			//			meterreading.Reading.Value},
-			//	},
-			//}
-			//if err := dbc.client.WriteSeries([]*influxdb.Series{series}); err != nil {
-			//	log.Printf("Failed to store data: %s", err)
-			//}
 		}
 	}, nil
 }
@@ -151,7 +140,7 @@ func (dbc DBClient) points2meterreadings(name string,
 
 func (dbc DBClient) GetFrequenciesBetween(meterID string,
 	start time.Time, end time.Time) (retval []MeterReading, err error) {
-	querystr := fmt.Sprintf("select timestamp, value from frequency where meterid = '%s' and timestamp > %d and timestamp < %d", meterID, start.Unix(), end.Unix())
+	querystr := fmt.Sprintf("select timestamp, value from %s where meterid = '%s' and timestamp > %d and timestamp < %d", dbc.serverconfig.Database, meterID, start.Unix(), end.Unix())
 	//log.Printf("Running query >%s<", querystr)
 	q := client.Query{
 		Command:  querystr,
@@ -171,7 +160,7 @@ func (dbc DBClient) GetFrequenciesBetween(meterID string,
 
 func (dbc DBClient) GetLastFrequencies(meterID string, amount int) ([]MeterReading, error) {
 	retval := []MeterReading{}
-	querystr := fmt.Sprintf("select timestamp, value from frequency where meterid= '%s' limit %d", meterID, amount)
+	querystr := fmt.Sprintf("select timestamp, value from %s where meterid= '%s' order by time desc limit %d", dbc.serverconfig.Database, meterID, amount)
 	log.Printf("Running query >%s<", querystr)
 	q := client.Query{
 		Command:  querystr,
