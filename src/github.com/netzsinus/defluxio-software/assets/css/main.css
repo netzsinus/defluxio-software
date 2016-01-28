@@ -1,0 +1,58 @@
+@font-face {
+  font-family: 'CooperHewitt-Medium';
+  src: url('/fonts/CooperHewitt-Medium.woff') format('woff'), /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+				url('/fonts/CooperHewitt-Medium.ttf') format('truetype'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+
+@font-face {
+  font-family: 'CooperHewitt-Bold';
+  src: url('/fonts/CooperHewitt-Bold.woff') format('woff'), /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+				url('/fonts/CooperHewitt-Bold.ttf') format('truetype'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+
+body {
+  padding-top: 90px;
+  padding-left: 30px;
+  padding-right: 30px;
+	font-family: 'CooperHewitt-Medium', arial, sans-serif;
+}
+
+h1,h2,h3,h4,h5,h6 {
+	font-family: 'CooperHewitt-Bold', arial, sans-serif;
+}
+
+.navbar-inverse {
+	background-color: #222;
+	border-color: #080808;
+	font-family: 'CooperHewitt-Bold', arial, sans-serif;
+}
+
+.center-block {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.vcenter {
+  display: inline-block;
+  vertical-align: bottom;
+  float: none;
+}
+
+.top-buffer { margin-top:35px; }
+.left-buffer { margin-left:20px; }
+.right-buffer { margin-right:20px; }
+
+#freqgauge {
+  width:320px; height:240px;
+}
+
+#rlgauge {
+  width:320px; height:240px;
+}
+
+#freqchart .frequenz .line {
+	fill: pink;
+	stroke: pink;
+  width:480px; height:220px;
+}

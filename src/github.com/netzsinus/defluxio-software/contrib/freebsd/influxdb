@@ -1,0 +1,28 @@
+#!/bin/sh
+
+. /etc/rc.subr
+
+installdir="/home/defluxio/influxdb"
+configfile="/home/defluxio/etc/influxdb_config.toml"
+
+name=influxdb
+rcvar=influxdb_enable
+load_rc_config $name
+pidfile=/var/run/influxdb.pid
+start_cmd=influxdb_start
+stop_postcmd=influxdb_cleanup
+
+command="${installdir}/daemon"
+command_args="--config ${configfile}"
+
+influxdb_start() {
+	echo "Starting influxdb."
+	touch ${pidfile}
+	/usr/sbin/daemon -cf -p ${pidfile} ${command} ${command_args}
+}
+
+influxdb_cleanup() {
+	[ -f ${pidfile} ] && rm ${pidfile}
+}
+
+run_rc_command "$1"

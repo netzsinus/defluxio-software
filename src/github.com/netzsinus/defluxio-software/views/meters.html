@@ -1,0 +1,44 @@
+{{define "meter"}}
+  {{template "header"}}
+  <div class="container-fluid">
+    <a name="meterlist"></a>
+    <div class="row center-block">
+      <div class="col-md-12 vcenter">
+					<h3>
+						<i class="glyphicon glyphicon-list right-buffer"></i>
+						Messgeräte des Projekts
+					</h3>
+					<div class="row center-block top-buffer">
+      <div class="col-md-1 vcenter pull-left">
+      </div>
+			<div class="col-md-10 vcenter pull-left" id="meterlist">
+				<div class="table-responsive">
+					<table class="table table-hover">
+						<tr>
+							<th>Rang</th>
+							<th>Name</th>
+							<th>Standort</th>
+							<th>Frequenz</th>
+							<th>Empfangen</th>
+						</tr>
+						{{range .Meters}}
+						<tr>
+							<td>{{.Rank}}</td>
+							<td>{{.Name}}</td>
+							<td>{{.Location}}</td>
+							<td>{{.Cache.LastReading.Value | doublethreedigits }}</td>
+							<td>{{.Cache.LastReading.Timestamp | tstotime }} &mdash;
+								{{.Cache.LastReading.Timestamp | tstodate }}</td>
+						</tr>
+						{{end}}
+					</table>
+				</div>
+			</div>
+			<div class="col-md-1 vcenter pull-left">
+			</div>
+		</div>
+	</div>
+</div>
+	</div>
+{{template "footer"}}
+{{end}}

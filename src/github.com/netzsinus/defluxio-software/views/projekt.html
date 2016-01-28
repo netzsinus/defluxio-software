@@ -1,0 +1,98 @@
+{{define "projekt"}}
+  {{template "header"}}
+  <div class="container-fluid">
+    <a name="Projekt"></a>
+    <div class="row center-block">
+      <div class="col-md-12 vcenter">
+					<h3>
+						<i class="glyphicon glyphicon-book right-buffer"></i>
+						Projekt
+					</h3>
+			</div>
+		</div>
+    <div class="row center-block top-buffer">
+			<div class="col-md-1 vcenter pull-left"></div>
+			<div class="col-md-10 vcenter">
+				<p>Das Projekt Netzsin.us ist aus dem Wunsch entstanden, die
+				Funktionsweise des Stromnetzes besser zu verstehen. Die
+				Hintergründe des Projekts wurden in den folgenden Vorträgen
+				näher vorgestellt:</p>
+
+				<ul>
+					<li><a
+					href="https://mrmcd.net/2014/fahrplan/events/5985.html">MRMCD2014</a>:
+					Einführung in die Frequenzmessung, Hardwaredesign &mdash; <a
+						href="https://media.ccc.de/v/MRMCD2014_-_5985_-_de_-_tiefbaustelle_s21_-_201409051830_-_https_netzsin_us_-_dem_stromnetz_auf_die_finger_geguckt_-_gonium#video">Video</a>,
+					<a href="/slides/MRMCD14.pdf">Folien</a>
+					</li>
+					<li><a
+					href="https://mrmcd.net/2015/fahrplan/events/7012.html">MRMCD2015</a>:
+					Wir wirkt sich die Sonnenfinsternis 2015 und die
+					Schnellabschaltung eines KKW auf die Netzfrequenz aus? &mdash;
+					<a
+						href="https://media.ccc.de/v/MRMCD15-7012-stromhandel_sonnenfinsternis_kkw-schnellabschaltung#video">Video</a>,
+					<a href="/slides/MRMCD15.pdf">Folien</a>
+					</li>
+					<li><a href="https://events.ccc.de/congress/2015/Fahrplan/events/7323.html">32. Chaos Communication Congress</a>: Wie man
+					einen Blackout verursacht. &mdash; <a href="https://media.ccc.de/v/32c3-7323-wie_man_einen_blackout_verursacht">Video</a>, <a
+						href="/slides/32C3-Blackout-16-9.pdf">Folien</a></li>
+				</ul>
+
+				<p>Netzsin.us verwendet ausschließlich Open Source-Komponenten,
+				um eine zeitlich hochaufgelöste Netzfrequenzmessung zu
+				realisieren. Die Daten sind für nichtkommerzielle Zwecke frei
+				verwendbar. Alle Hard- und Softwarekomponenten sind auf der
+				<a href="https://github.com/netzsinus">auf der Netsin.us Github-Seite</a>
+				dokumentiert.</p>
+				<div class="col-md-1 vcenter pull-right"></div>
+			</div>
+    <div class="row center-block top-buffer">
+			<div class="row center-block top-buffer">
+			<div class="col-md-1 vcenter pull-left"></div>
+			<div class="col-md-10 vcenter">
+				<img src="/img/messgeraet.png" class="img-responsive
+				inline-block pull-left" alt="Responsive image" />
+				<img src="/img/prototyp1.jpg" class="img-responsive
+				inline-block pull-left" alt="Responsive image" />
+			<div class="col-md-1 vcenter pull-right"></div>
+			</br>
+		</div>
+	</div>
+	
+		<a name="Mithelfen"></a>
+    <div class="row center-block">
+      <div class="col-md-12 vcenter">
+					<h3>
+						<i class="glyphicon glyphicon-book right-buffer"></i>
+						Mitmachen
+					</h3>
+			</div>
+		</div>
+    <div class="row center-block top-buffer">
+			<div class="col-md-1 vcenter pull-left"></div>
+			<div class="col-md-10 vcenter">
+			
+				<p>Wenn Du mithelfen möchtest: Sehr gerne! Bitte gehe ins <a
+					href="http://forum.netzsin.us">Forum</a> und stelle Deine Ideen vor. 
+				Die folgenden
+				Bereiche können von Deiner Hilfe profitieren:</p>
+				<ul>
+					<li>Nutze die Daten! Entwickele eigene Analysen auf der Basis
+					der Meßdaten. Schau Dir <a href"/daten">die Hinweise zu den
+						Datensätzen</a> an.</li>
+					<li>Im Moment suchen wir noch weitere Messgerätebetreiber, die
+					im Europäischen Ausland Meßgeräte betreiben und die Daten an
+					unseren Server schicken. Weitere Messgeräte in Deutschland
+					schaden aber nicht!</li>
+					<li>Das Messgerät funktioniert gut, kostet derzeit aber
+					relativ viel. Eine Neuentwicklung des Meßgeräts wäre sehr
+					toll!</li>
+					<li>Wir freuen uns natürlich über Pull-Requests auf
+					Github!</li>
+				</ul>
+				
+			</div>
+		<div class="col-md-1 vcenter pull-right"></div>
+	</div>
+	{{template "footer"}}
+{{end}}

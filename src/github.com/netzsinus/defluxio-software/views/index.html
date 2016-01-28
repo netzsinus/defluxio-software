@@ -1,0 +1,81 @@
+{{define "index"}}
+  {{template "header"}}
+  <div class="container-fluid">
+    <a name="start"></a>
+    <div class="row center-block">
+      <div class="col-md-12 vcenter">
+					<h3>
+						<i class="glyphicon glyphicon-stats right-buffer"></i>
+						Momentane Frequenzabweichung im Stromnetzes
+					</h3>
+			</div>
+		</div>
+    
+		<div class="row center-block top-buffer">
+      <div class="col-md-1 vcenter pull-left">
+      </div>
+      <div class="col-md-3 vcenter pull-left" id="freqgauge"></div>
+      <div class="col-md-7 vcenter pull-left">
+        <div id="freqchart" class="epoch"></div>
+      </div>
+      <div class="col-md-1 vcenter pull-left">
+      </div>
+    </div>
+		<div class="row center-block top-buffer">
+      <div class="col-md-1 vcenter pull-left">
+      </div>
+      <div class="col-md-3 vcenter pull-left" id="rlgauge"></div>
+      <div class="col-md-7 vcenter pull-left">
+        <div id="rlchart" class="epoch"></div>
+      </div>
+      <div class="col-md-1 vcenter pull-left">
+      </div>
+    </div>
+		<div class="row center-block">
+      <div class="col-md-1 vcenter pull-left">
+      </div>
+      <div class="col-md-10 vcenter top-buffer pull-left">
+        <p>
+        Die Messung der Netzfrequenz liefert Einblicke in das Gleichgewicht
+        unseres Stromnetz: Normalerweise beträgt die Netzfrequenz 50
+        Hertz. Sinkt sie ab, wird nicht genügend Leistung von
+        Kraftwerken in das Netz eingespeist. Liegt sie darüber, wird
+        zuviel Leistung eingespeist. Kleinere Frequenzabweichungen
+				sind normal.
+        Wenn die Netzfrequenz jedoch um mehr
+        als 10 mHz von der Nennfrequenz 50 Hz abweicht wird die
+        Primärregelung des Stromnetzes aktiv und gleicht
+        die Abweichung aus.</p>
+        <p>Das Tacho zeigt immer den aktuellen Wert
+        an, während ein Graph der Abweichung der letzen drei Minuten 
+        (in mHz) dargestellt wird. Die Schwankungen der Netzfrequenz sind
+        üblicherweise nicht bedenklich &mdash; unser Stromnetz ist recht
+        stabil.</p>
+				<p>Darunter befindet sich die gleiche Darstellung für die
+				vermutlich eingesetzte Regelleistung. Die Regelleistung wird durch die
+				europäischen Übertragungsnetzbetreiber zur Verfügung gestellt
+				und dient dazu, kurzfristige Schwankungen der Frequenz
+				auszugleichen. Laut <a
+					href="https://www.entsoe.eu/publications/system-operations-reports/operation-handbook/Pages/default.aspx">
+					ENTSO-E Handbook</a> beträgt die durchschnittlich verfügbare
+				Regelleistung 19.500 MW/Hz. Sobald die Netzfrequenz mehr als
+				10mHz von den angestrebten 50Hz abweicht, wird durch die
+				beteiligten Kraftwerke die Regelleistung zur Verfügung gestellt.
+				Die hier dargestellten Werte stellen eine Schätzung dar.
+				<p>Das <a href="http://forum.netzsin.us">Forum</a> ist der beste
+				Anlaufpunkt für alle Fragen rund um das Projekt.</p>
+      </div>
+      <div class="col-md-1 vcenter pull-left">
+      </div>
+    </div>
+
+	</div> <!-- container -->
+	<script type="text/javascript">
+		var ws_endpoint = "wss://{{$}}/ws";
+		if (window.location.protocol == 'http:') {
+			console.log("connecting to ws:// instead of wss://")
+			ws_endpoint = "ws://{{$}}/ws";
+		}
+		</script>
+{{template "footer"}}
+{{end}}

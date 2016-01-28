@@ -1,0 +1,29 @@
+# defluxio binaries
+defluxio-provider
+defluxiod
+defluxio-exporter
+dist
+
+# configuration files
+defluxio-provider.conf
+defluxio-exporter.conf
+defluxiod.conf
+*.conf
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+*.lst
+*.eep
+*.map
+*.sym
+*.lss
+.dep
+
+# Executables
+*.hex
+
+# Mac
+.DS_Store
