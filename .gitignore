@@ -1,2 +1,12 @@
 bin
 pkg
+#
+# configuration files
+defluxio-provider.conf
+defluxio-exporter.conf
+defluxiod.conf
+*.conf
+
+
+#Mac
+.DS_Store
