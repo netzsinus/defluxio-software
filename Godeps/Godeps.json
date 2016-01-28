@@ -1,9 +1,6 @@
 {
 	"ImportPath": "github.com/netzsinus/defluxio-software",
 	"GoVersion": "go1.5.1",
-	"Packages": [
-		"./..."
-	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/gorilla/context",
@@ -18,13 +15,19 @@
 			"Rev": "efd7f76a14d91b4a8e9597306f554305ac9b0b9b"
 		},
 		{
-			"ImportPath": "github.com/influxdb/influxdb/client",
-			"Comment": "v0.8.6-132-g8049c34",
-			"Rev": "8049c34c7de9545f06b1e328087914edd202fbb1"
+			"ImportPath": "github.com/influxdata/influxdb/client/v2",
+			"Comment": "v0.10.0-beta2-12-ge5fa969",
+			"Rev": "e5fa969306b236d91015fc7bb21d89c15b81c114"
 		},
 		{
-			"ImportPath": "github.com/tarm/goserial",
-			"Rev": "b3440c3c63556c3fd67e915be3b92195bc70294a"
+			"ImportPath": "github.com/influxdb/influxdb/models",
+			"Comment": "v0.10.0-beta2-12-ge5fa969",
+			"Rev": "e5fa969306b236d91015fc7bb21d89c15b81c114"
+		},
+		{
+			"ImportPath": "github.com/influxdb/influxdb/pkg/escape",
+			"Comment": "v0.10.0-beta2-12-ge5fa969",
+			"Rev": "e5fa969306b236d91015fc7bb21d89c15b81c114"
 		}
 	]
 }
