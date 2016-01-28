@@ -1,5 +1,5 @@
-bin
-pkg
+/bin
+/pkg
 #
 # configuration files
 defluxio-provider.conf
