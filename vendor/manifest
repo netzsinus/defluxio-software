@@ -1,0 +1,18 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "github.com/influxdb/influxdb/pkg/escape",
+			"repository": "https://github.com/influxdb/influxdb",
+			"revision": "9ab5de0a34fb3e4184958984d9165259f42f70da",
+			"branch": "master",
+			"path": "/pkg/escape"
+		},
+		{
+			"importpath": "github.com/tarm/goserial",
+			"repository": "https://github.com/tarm/goserial",
+			"revision": "b3440c3c63556c3fd67e915be3b92195bc70294a",
+			"branch": "master"
+		}
+	]
+}
