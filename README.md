@@ -97,13 +97,13 @@ displayed on the webpage. In short, while in the directory
 Run an instance of ``defluxiod`` on your local machine:
 
 ````
-    $ ./bin/defluxiod -genconfig
-		$ ./bin/defluxiod -config=defluxiod.conf
-		2016/01/29 10:13:29 Configured meters are:
-		2016/01/29 10:13:29 * meter1 (Meter 1)
-		2016/01/29 10:13:29 * meter2 (Meter 2)
-		2016/01/29 10:13:29 Starting meter surveilance routine
-		2016/01/29 10:13:29 Starting server at 127.0.0.1:8080
+$ ./bin/defluxiod -genconfig
+$ ./bin/defluxiod -config=defluxiod.conf
+2016/01/29 10:13:29 Configured meters are:
+2016/01/29 10:13:29 * meter1 (Meter 1)
+2016/01/29 10:13:29 * meter2 (Meter 2)
+2016/01/29 10:13:29 Starting meter surveilance routine
+2016/01/29 10:13:29 Starting server at 127.0.0.1:8080
 ````
 
 If you browse to [http://127.0.0.1:8080](http://127.0.0.1:8080), you
@@ -112,14 +112,14 @@ should see a clone of the netzsin.us page.
  Start a simulated frequency sensor:
 
 ````
-    $ ./bin/defluxio-provider -genconfig
-		$ ./bin/defluxio-provider -config=defluxio-provider.conf -sim
-		2016/01/29 10:17:27 Frequency: 49.98730
-		2016/01/29 10:17:27 Error posting data:  Post http://127.0.0.1:8080/api/submit/meter1: EOF
-		2016/01/29 10:17:29 Frequency: 49.95660
-		2016/01/29 10:17:31 Frequency: 50.01041
-		2016/01/29 10:17:33 Frequency: 49.97088
-		2016/01/29 10:17:35 Frequency: 49.95438
+$ ./bin/defluxio-provider -genconfig
+$ ./bin/defluxio-provider -config=defluxio-provider.conf -sim
+2016/01/29 10:17:27 Frequency: 49.98730
+2016/01/29 10:17:27 Error posting data:  Post http://127.0.0.1:8080/api/submit/meter1: EOF
+2016/01/29 10:17:29 Frequency: 49.95660
+2016/01/29 10:17:31 Frequency: 50.01041
+2016/01/29 10:17:33 Frequency: 49.97088
+2016/01/29 10:17:35 Frequency: 49.95438
 ````
 
 The parameter ``-sim`` does enable the simulation mode - no frequency
@@ -152,10 +152,10 @@ If you're using an embedded sensor, it might be tricky to construct the
 ISO8601 date string. You can also specify a unix timestamp with
 millisecond resolution like this:
 
-$ curl -i -X POST -H "Content-Type: application/json" \
--H "X-API-KEY: secretkey1" \
--d "{\"Timestamp\": `date +%s`.12, \"Value\": 49.850}" \
-http://127.0.0.1:8080/api/submit/meter1
+		$ curl -i -X POST -H "Content-Type: application/json" \
+		-H "X-API-KEY: secretkey1" \
+		-d "{\"Timestamp\": `date +%s`.12, \"Value\": 49.850}" \
+		http://127.0.0.1:8080/api/submit/meter1
 
 Please note that I appended ``.12`` after the date command to simulate
 subsecond resolution.
