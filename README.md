@@ -94,7 +94,7 @@ your own server. The server does not store any data by default, see
 displayed on the webpage. In short, while in the directory
 ``defluxio-software``, try the following:
 
-1. Run an instance of ``defluxiod`` on your local machine:
+Run an instance of ``defluxiod`` on your local machine:
 
 ````
     $ ./bin/defluxiod -genconfig
@@ -106,10 +106,11 @@ displayed on the webpage. In short, while in the directory
 		2016/01/29 10:13:29 Starting server at 127.0.0.1:8080
 ````
 
-	If you browse to [http://127.0.0.1:8080](http://127.0.0.1:8080), you
-	should see a clone of the netzsin.us page.
+If you browse to [http://127.0.0.1:8080](http://127.0.0.1:8080), you
+should see a clone of the netzsin.us page.
 
-2. Start a simulated frequency sensor:
+ Start a simulated frequency sensor:
+
 ````
     $ ./bin/defluxio-provider -genconfig
 		$ ./bin/defluxio-provider -config=defluxio-provider.conf -sim
@@ -120,9 +121,10 @@ displayed on the webpage. In short, while in the directory
 		2016/01/29 10:17:33 Frequency: 49.97088
 		2016/01/29 10:17:35 Frequency: 49.95438
 ````
-	The parameter ``-sim`` does enable the simulation mode - no frequency
-	sensor hardware is needed. It just sends random frequency measurements
-	to the server.
+
+The parameter ``-sim`` does enable the simulation mode - no frequency
+sensor hardware is needed. It just sends random frequency measurements
+to the server.
 
 If you want to submit values to the server using your own client, its
 rather easy: You can submit a JSON array using the POST verb. Using
@@ -145,6 +147,18 @@ The linux date command does not format the date correctly according to
 ISO8601, so a little ``sed`` magic is applied. Please note: The server
 currently has a bug leading to failing goroutines on first submission.
 Subsequent calls will succeed, just call curl several times.
+
+If you're using an embedded sensor, it might be tricky to construct the
+ISO8601 date string. You can also specify a unix timestamp with
+millisecond resolution like this:
+
+$ curl -i -X POST -H "Content-Type: application/json" \
+-H "X-API-KEY: secretkey1" \
+-d "{\"Timestamp\": `date +%s`.12, \"Value\": 49.850}" \
+http://127.0.0.1:8080/api/submit/meter1
+
+Please note that I appended ``.12`` after the date command to simulate
+subsecond resolution.
 
 #### Installing InfluxDB (only needed for the server)
 

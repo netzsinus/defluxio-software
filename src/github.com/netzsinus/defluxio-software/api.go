@@ -4,10 +4,13 @@
 package defluxio
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 	"time"
 )
@@ -76,12 +79,7 @@ func MkSubmitReadingHandler(dbchannel chan MeterReading, serverConfig *ServerCon
 				invalidCredentials = false
 				break
 			}
-		} //for _, key := range serverConfig.API.Keys {
-		//	if key == credentials {
-		//		invalidCredentials = false
-		//		break
-		//	}
-		//}
+		}
 		if invalidCredentials {
 			errormessage := APIClientErrorMessage{"invalidcredentials", "given credentials are not valid"}
 			errorbytes, _ := json.Marshal(errormessage)
@@ -90,19 +88,47 @@ func MkSubmitReadingHandler(dbchannel chan MeterReading, serverConfig *ServerCon
 				http.StatusUnauthorized)
 			return
 		}
-
+		// http://stackoverflow.com/questions/23070876/reading-body-of-http-request-without-modifying-request-state
+		body, _ := ioutil.ReadAll(r.Body)
+		reader1 := bytes.NewBuffer(body)
+		reader2 := bytes.NewBuffer(body)
 		// Decode the body and check for errors.
-		decoder := json.NewDecoder(r.Body)
+		decoder := json.NewDecoder(reader1)
 		var reading Reading
-		err := decoder.Decode(&reading)
-		if err != nil {
-			msg := fmt.Sprintf("Cannot decode data - invalid format: %s", err.Error())
-			errormessage := APIClientErrorMessage{"invalidformat", msg}
-			errorbytes, _ := json.Marshal(errormessage)
-			http.Error(w,
-				string(errorbytes),
-				http.StatusBadRequest)
-			return
+		format_invalid := false
+		errormsgs := ""
+		if err := decoder.Decode(&reading); err != nil {
+			errormsgs = err.Error()
+			// Standard RFC3339 decoding did not work - maybe this is an
+			// embedded client. Is the timestamp represented as a unix
+			// timestamp w/ milliseconds?
+			type UnixReading struct {
+				Timestamp float64
+				Value     float64
+			}
+			var unixreading UnixReading
+			decoder = json.NewDecoder(reader2)
+			if uerr := decoder.Decode(&unixreading); uerr != nil {
+				format_invalid = true
+				errormsgs = fmt.Sprintf("%s; %s", errormsgs, uerr.Error())
+			} else {
+				// convert the float to a unix timestamp w/ nanosecond
+				// resolution
+				secs := math.Trunc(unixreading.Timestamp)
+				nsecs := (unixreading.Timestamp - secs) * math.Pow(10, 9)
+				reading.Timestamp = time.Unix(int64(secs), int64(nsecs))
+				reading.Value = unixreading.Value
+				log.Println("Reconstructed reading from unix timestamp: ", reading)
+			}
+			if format_invalid {
+				msg := fmt.Sprintf("Cannot decode data - invalid format: %s", errormsgs)
+				errormessage := APIClientErrorMessage{"invalidformat", msg}
+				errorbytes, _ := json.Marshal(errormessage)
+				http.Error(w,
+					string(errorbytes),
+					http.StatusBadRequest)
+				return
+			}
 		}
 
 		// Check whether timestamp is current
