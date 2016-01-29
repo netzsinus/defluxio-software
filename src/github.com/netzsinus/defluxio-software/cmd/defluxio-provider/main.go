@@ -106,6 +106,7 @@ func pusher() {
 		client := &http.Client{}
 		body := defluxio.Reading{time.Now(), frequency}
 		bodyBytes, _ := json.Marshal(body)
+		//log.Println("Posting ", string(bodyBytes), " to endpoint ", reqUrl)
 		req, err := http.NewRequest("POST", reqUrl, bytes.NewReader(bodyBytes))
 		if err != nil {
 			log.Fatal("Failed to compose submit request: ", err.Error())

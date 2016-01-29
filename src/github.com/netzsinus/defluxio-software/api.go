@@ -5,6 +5,7 @@ package defluxio
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -75,8 +76,7 @@ func MkSubmitReadingHandler(dbchannel chan MeterReading, serverConfig *ServerCon
 				invalidCredentials = false
 				break
 			}
-		}
-		//for _, key := range serverConfig.API.Keys {
+		} //for _, key := range serverConfig.API.Keys {
 		//	if key == credentials {
 		//		invalidCredentials = false
 		//		break
@@ -96,7 +96,8 @@ func MkSubmitReadingHandler(dbchannel chan MeterReading, serverConfig *ServerCon
 		var reading Reading
 		err := decoder.Decode(&reading)
 		if err != nil {
-			errormessage := APIClientErrorMessage{"invalidformat", "Cannot decode data - invalid format"}
+			msg := fmt.Sprintf("Cannot decode data - invalid format: %s", err.Error())
+			errormessage := APIClientErrorMessage{"invalidformat", msg}
 			errorbytes, _ := json.Marshal(errormessage)
 			http.Error(w,
 				string(errorbytes),
@@ -108,7 +109,7 @@ func MkSubmitReadingHandler(dbchannel chan MeterReading, serverConfig *ServerCon
 		maxTimeDeviation, _ := time.ParseDuration("30s")
 		deviation := reading.Timestamp.Sub(time.Now())
 		if (deviation > maxTimeDeviation) || (deviation < -maxTimeDeviation) {
-			errormessage := APIClientErrorMessage{"timedeviation", "Timestamp deviates too much"}
+			errormessage := APIClientErrorMessage{"timedeviation", "Timestamp deviates more than 30s from server time"}
 			errorbytes, _ := json.Marshal(errormessage)
 			http.Error(w,
 				string(errorbytes),

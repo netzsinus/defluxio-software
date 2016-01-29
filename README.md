@@ -124,6 +124,28 @@ displayed on the webpage. In short, while in the directory
 	sensor hardware is needed. It just sends random frequency measurements
 	to the server.
 
+If you want to submit values to the server using your own client, its
+rather easy: You can submit a JSON array using the POST verb. Using
+curl:
+
+    $ curl -i -X POST -H "Content-Type: application/json" \
+			 -H "X-API-KEY: secretkey1" \
+			 -d "{\"Timestamp\": \"`date --rfc-3339=ns | sed 's/ /T/; s/\(\....\).*-/\1-/g'`\", \"Value\":49.9999}" \
+			http://127.0.0.1:8080/api/submit/meter1
+		HTTP/1.1 200 OK
+		Content-Type: application/json
+		Date: Fri, 29 Jan 2016 10:42:43 GMT
+		Content-Length: 0
+
+In plain text the body of the request looks like this:
+
+    {"Timestamp":"2016-01-29T11:33:22.954022564+01:00","Value":49.98730283610467}
+
+The linux date command does not format the date correctly according to
+ISO8601, so a little ``sed`` magic is applied. Please note: The server
+currently has a bug leading to failing goroutines on first submission.
+Subsequent calls will succeed, just call curl several times.
+
 #### Installing InfluxDB (only needed for the server)
 
 If you want to store frequency measurements you need to install the
