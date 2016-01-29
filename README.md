@@ -139,7 +139,7 @@ curl:
 
 In plain text the body of the request looks like this:
 
-    {"Timestamp":"2016-01-29T11:33:22.954022564+01:00","Value":49.98730283610467}
+    {"Timestamp":"2016-01-29T11:33:22.954022564+01:00","Value":49.9999}
 
 The linux date command does not format the date correctly according to
 ISO8601, so a little ``sed`` magic is applied. Please note: The server
