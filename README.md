@@ -3,63 +3,53 @@ Netzsinus software components
 
 [![Build Status](https://travis-ci.org/netzsinus/defluxio-software.svg?branch=master)](https://travis-ci.org/netzsinus/defluxio-software)
 
-Please note: This is an alpha release. Kittens might get harmed.
 
-Prerequisites
--------------
+This repository contains the software components (excluding firmware) of
+the netzsin.us project. These are the following:
 
-Install Go > 1.3 and, if you want to run the server, InfluxDB.
+ * ``defluxiod``, the server component (serves HTML and deals with data
+	 sent by the sensors). Incoming sensor data will be stored in an
+ [InfluxDB](https://influxdata.com) database, although this might change
+ in the future.
+ * ``defluxio-provider``: The reference implementation of the sensor
+   software. It reads the measurements from the sensor and submits them
+	 to the server.
+ * ``defluxio-exporter``: A small software component that extracts
+   measurements from the database and exports them into text files for
+	 [data.netzsin.us](data.netzsin.us).
 
-## Installing InfluxDB (only needed for the server)
+### Installing the software
 
-You need to install the InfluxDB version 0.7 as outlined [on the influxdb
-website](http://influxdb.com/docs/v0.7/introduction/installation.html).
-to install the commandline interface.
+You need a working [Golang installation](http://golang.org) and the [GB
+build tool](http://getgb.io/) in order to compile your binary. Please
+install the Go compiler first. Afterwards you can install GB like this:
 
-## Installing the defluxio software
+    go get github.com/constabulary/gb/...
 
-If you're new to golang: an important concept is the "workspace" which contains all the libraries, 
-project files etc. On a plain machine, I usually do the following:
+Clone this repository:
 
-	$ mkdir -p ~/go/{src|bin|pkg}
+    git clone https://github.com/netzsinus/defluxio-software.git
 
-Now, add the following two lines to your .profile:
+and build it:
 
-	export GOPATH="$HOME/go"
-	export PATH="$GOPATH/bin:$PATH"
-	
-Reload the profile:
+    cd defluxio-software
+    gb build all
 
-	$ . ~/.profile
+Now, there should be several binaries in the ````bin```` subfolder.
 
-Your workspace is now set up. The dependencies of the software are managed using [godep](https://github.com/tools/godep). The installation is a good test whether your environment is set up correctly. Simply run
+#### Crosscompiling e.g. for Raspberry Pi
 
-	go get github.com/tools/godep
+Go has very good crosscompilation support. Typically, I develop under
+Mac OS and crosscompile a binary for my RPi. It is easy:
 
-You should now have a working godep binary in your path. Continue by checking out the defluxio source:
-	
-	$ cd ~/go/src
-	$ mkdir github.com/netzinus
-	$ cd github.com/netzsinus
-	$ git clone https://github.com/netzsinus/defluxio-software.git
-	$ cd defluxio-software
-	
-Now, restore the libraries used by defluxio:
+    # clear whatever old binaries I have
+    rm -rf pkg bin
+    # start crosscompilation
+    GOOS=linux GOARCH=arm GOARM=5 gb build all
 
-	$ godep restore
-	
-You're all set. You can build the project using 
-
-	$ go install ./...
-	
-This puts some binaries in the ```~/go/bin``` subdirectory:
-
-	$ ls ~/go/bin
-	defluxio-exporter  defluxio-provider  defluxiod  godep
-
-If you run into errors regarding other packages, please make sure you
-have *all* of the following version control systems installed: git,
-mercurial, bazaar and subversion.
+You can then copy the binary from the ``bin`` subdirectory to the RPi
+and start it. Please note that ``defluxiod`` will not be built because
+it depends on libraries only available for the 64bit x86 architecture.
 
 ## Configuration 
 
@@ -70,13 +60,13 @@ All binaries can generate a default configuration file which serves as a templat
 	$ cd etc
 	$ defluxio-provider -genconfig=true
 
-Now, edit the file ```defluxio-provider.conf```. If you want to use the "official" netzsin.us server (that would make me happy!) please contact ```md@gonium.net``` for access credentials. On the typical raspberry pi installation, you can start the frequency provider daemon like this:
+Now, edit the file ``defluxio-provider.conf``. If you want to use the "official" netzsin.us server (that would make me happy!) please contact ``md@gonium.net`` for access credentials. On the typical raspberry pi installation, you can start the frequency provider daemon like this:
 
 	$ sudo /home/pi/go/bin/defluxio-provider -config=/home/pi/etc/defluxio-provider.conf
 
 A typical startup sequence looks like this:
 
-````
+``
 2015/02/20 11:55:17 Received unknown data: 
 2015/02/20 11:55:17 Startup: Ignoring measurement 49.99652099609375
 2015/02/20 11:55:17 Received unknown data: 
@@ -94,18 +84,51 @@ A typical startup sequence looks like this:
 2015/02/20 11:55:19 Startup: Ignoring measurement 49.995670318603516
 2015/02/20 11:55:20 Info message: I;Freque996321 Hz, delta:  -4 mHz
 2015/02/20 11:55:20 Frequency: 49.99632
-````
+``
 
-Notes
------
+## Development Setup
 
-* [Cooper Hewitt Font](http://www.cooperhewitt.org/colophon/cooper-hewitt-the-typeface-by-chester-jenkins/)
-* [cubism.js data source](https://stackoverflow.com/questions/18069409/are-there-any-tutorials-or-examples-for-cubism-js-websocket)
-* [Epoch - Graph library by Fastly](http://fastly.github.io/epoch/)
-* [Schmitt-Trigger](http://www.mikrocontroller.net/articles/Schmitt-Trigger)
-* [PowerBox: The Safe AC Power Meter](https://instruct1.cit.cornell.edu/Courses/ee476/FinalProjects/s2008/cj72_xg37/cj72_xg37/)
-* [Komparatorschaltung mit dem LM393](http://www.ne555.at/schaltungstechnik/390-komparator-mit-lm393-und-einfacher-spannungsversorgung.html)
-* [Jaschinsky, Markus: Untersuchung des Zusammenhangs zwischen gemessener Netzfrequenz und Regelenergieeinsatz als Basis eines Reglerentwurfs zum Intraday Lastmanagement](http://edoc.sub.uni-hamburg.de/haw/frontdoor.php?source_opus=2067&la=de)
-* [High speed capture mit ATMega Timer](http://www.mikrocontroller.net/articles/High-Speed_capture_mit_ATmega_Timer) - für eine exakte Frequenzmessung
+If you want to contribute (or test your new server design) you can run
+your own server. The server does not store any data by default, see
+"Installing InfluxDB" below. But incoming frequency measurements will be
+displayed on the webpage. In short, while in the directory
+``defluxio-software``, try the following:
 
+1. Run an instance of ``defluxiod`` on your local machine:
+
+    $ ./bin/defluxiod -genconfig
+		$ ./bin/defluxiod -config=defluxiod.conf
+		2016/01/29 10:13:29 Configured meters are:
+		2016/01/29 10:13:29 * meter1 (Meter 1)
+		2016/01/29 10:13:29 * meter2 (Meter 2)
+		2016/01/29 10:13:29 Starting meter surveilance routine
+		2016/01/29 10:13:29 Starting server at 127.0.0.1:8080
+	 
+	If you browse to [http://127.0.0.1:8080](http://127.0.0.1:8080), you
+	should see a clone of the netzsin.us page.
+
+2. Start a simulated frequency sensor:
+
+    $ ./bin/defluxio-provider -genconfig
+		$ ./bin/defluxio-provider -config=defluxio-provider.conf -sim
+		2016/01/29 10:17:27 Frequency: 49.98730
+		2016/01/29 10:17:27 Error posting data:  Post http://127.0.0.1:8080/api/submit/meter1: EOF
+		2016/01/29 10:17:29 Frequency: 49.95660
+		2016/01/29 10:17:31 Frequency: 50.01041
+		2016/01/29 10:17:33 Frequency: 49.97088
+		2016/01/29 10:17:35 Frequency: 49.95438
+
+	The parameter ``-sim`` does enable the simulation mode - no frequency
+	sensor hardware is needed. It just sends random frequency measurements
+	to the server.
+
+### Installing InfluxDB (only needed for the server)
+
+If you want to store frequency measurements you need to install the
+InfluxDB version 0.9 as outlined [on the influxdb
+website](http://influxdb.com/docs/v0.9/introduction/installation.html).
+
+To enable the database you need to set ``enabled: true`` in your
+``defluxiod.conf`` file. You can also use the ``defluxio-exporter``
+commandline tool to export the measurements from the database again.
 
