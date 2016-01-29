@@ -66,7 +66,7 @@ Now, edit the file ``defluxio-provider.conf``. If you want to use the "official"
 
 A typical startup sequence looks like this:
 
-``
+````
 2015/02/20 11:55:17 Received unknown data: 
 2015/02/20 11:55:17 Startup: Ignoring measurement 49.99652099609375
 2015/02/20 11:55:17 Received unknown data: 
@@ -84,7 +84,7 @@ A typical startup sequence looks like this:
 2015/02/20 11:55:19 Startup: Ignoring measurement 49.995670318603516
 2015/02/20 11:55:20 Info message: I;Freque996321 Hz, delta:  -4 mHz
 2015/02/20 11:55:20 Frequency: 49.99632
-``
+````
 
 ## Development Setup
 
@@ -96,6 +96,7 @@ displayed on the webpage. In short, while in the directory
 
 1. Run an instance of ``defluxiod`` on your local machine:
 
+````
     $ ./bin/defluxiod -genconfig
 		$ ./bin/defluxiod -config=defluxiod.conf
 		2016/01/29 10:13:29 Configured meters are:
@@ -103,12 +104,13 @@ displayed on the webpage. In short, while in the directory
 		2016/01/29 10:13:29 * meter2 (Meter 2)
 		2016/01/29 10:13:29 Starting meter surveilance routine
 		2016/01/29 10:13:29 Starting server at 127.0.0.1:8080
-	 
+````
+
 	If you browse to [http://127.0.0.1:8080](http://127.0.0.1:8080), you
 	should see a clone of the netzsin.us page.
 
 2. Start a simulated frequency sensor:
-
+````
     $ ./bin/defluxio-provider -genconfig
 		$ ./bin/defluxio-provider -config=defluxio-provider.conf -sim
 		2016/01/29 10:17:27 Frequency: 49.98730
@@ -117,12 +119,12 @@ displayed on the webpage. In short, while in the directory
 		2016/01/29 10:17:31 Frequency: 50.01041
 		2016/01/29 10:17:33 Frequency: 49.97088
 		2016/01/29 10:17:35 Frequency: 49.95438
-
+````
 	The parameter ``-sim`` does enable the simulation mode - no frequency
 	sensor hardware is needed. It just sends random frequency measurements
 	to the server.
 
-### Installing InfluxDB (only needed for the server)
+#### Installing InfluxDB (only needed for the server)
 
 If you want to store frequency measurements you need to install the
 InfluxDB version 0.9 as outlined [on the influxdb
