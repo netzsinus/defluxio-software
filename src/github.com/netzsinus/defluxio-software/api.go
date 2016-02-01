@@ -118,7 +118,7 @@ func MkSubmitReadingHandler(dbchannel chan MeterReading, serverConfig *ServerCon
 				nsecs := (unixreading.Timestamp - secs) * math.Pow(10, 9)
 				reading.Timestamp = time.Unix(int64(secs), int64(nsecs))
 				reading.Value = unixreading.Value
-				log.Println("Reconstructed reading from unix timestamp: ", reading)
+				//log.Println("Reconstructed reading from unix timestamp: ", reading)
 			}
 			if format_invalid {
 				msg := fmt.Sprintf("Cannot decode data - invalid format: %s", errormsgs)
@@ -179,15 +179,19 @@ func MkSubmitReadingHandler(dbchannel chan MeterReading, serverConfig *ServerCon
 		// Note: This is a costly operation, but right now we don't have
 		// many meters. If the number of meters increases, change this
 		// algorithm.
-		if BestMeter.ID == meterid {
-			// The update we have received is from the best meter
-			//log.Println("Received update from highest ranking meter", BestMeter.ID)
-			// wrap everything again and forward update to all connected clients.
-			updateMessage, uerr := json.Marshal(reading)
-			if uerr != nil {
-				log.Printf("Cannot marshal update message for websocket consumers: ", uerr)
+		if BestMeter != nil {
+			if BestMeter.ID == meterid {
+				// The update we have received is from the best meter
+				//log.Println("Received update from highest ranking meter", BestMeter.ID)
+				// wrap everything again and forward update to all connected clients.
+				updateMessage, uerr := json.Marshal(reading)
+				if uerr != nil {
+					log.Printf("Cannot marshal update message for websocket consumers: ", uerr)
+				}
+				H.broadcast <- []byte(updateMessage)
 			}
-			H.broadcast <- []byte(updateMessage)
+		} else { // TODO: Initialize Bestmeter
+			log.Printf("BestMeter not initialized.")
 		}
 
 	})
