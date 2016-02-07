@@ -107,9 +107,11 @@ $ ./bin/defluxiod -config=defluxiod.conf
 ````
 
 If you browse to [http://127.0.0.1:8080](http://127.0.0.1:8080), you
-should see a clone of the netzsin.us page.
+should see a clone of the netzsin.us page. REMEMBER: If you restart the
+server you will also need to reload the webpage since its connection to
+the old server is not valid any more.
 
- Start a simulated frequency sensor:
+Start a simulated frequency sensor:
 
 ````
 $ ./bin/defluxio-provider -genconfig
@@ -130,14 +132,16 @@ If you want to submit values to the server using your own client, its
 rather easy: You can submit a JSON array using the POST verb. Using
 curl:
 
-    $ curl -i -X POST -H "Content-Type: application/json" \
-			 -H "X-API-KEY: secretkey1" \
-			 -d "{\"Timestamp\": \"`date --rfc-3339=ns | sed 's/ /T/; s/\(\....\).*-/\1-/g'`\", \"Value\":49.9999}" \
-			http://127.0.0.1:8080/api/submit/meter1
-		HTTP/1.1 200 OK
-		Content-Type: application/json
-		Date: Fri, 29 Jan 2016 10:42:43 GMT
-		Content-Length: 0
+````
+$ curl -i -X POST -H "Content-Type: application/json" \
+	 -H "X-API-KEY: secretkey1" \
+	 -d "{\"Timestamp\": \"`date --rfc-3339=ns | sed 's/ /T/; s/\(\....\).*-/\1-/g'`\", \"Value\":49.9999}" \
+	http://127.0.0.1:8080/api/submit/meter1
+HTTP/1.1 200 OK
+Content-Type: application/json
+Date: Fri, 29 Jan 2016 10:42:43 GMT
+Content-Length: 0
+````
 
 In plain text the body of the request looks like this:
 
@@ -152,10 +156,12 @@ If you're using an embedded sensor, it might be tricky to construct the
 ISO8601 date string. You can also specify a unix timestamp with
 millisecond resolution like this:
 
-		$ curl -i -X POST -H "Content-Type: application/json" \
-		-H "X-API-KEY: secretkey1" \
-		-d "{\"Timestamp\": `date +%s`.12, \"Value\": 49.850}" \
-		http://127.0.0.1:8080/api/submit/meter1
+````
+$ curl -i -X POST -H "Content-Type: application/json" \
+-H "X-API-KEY: secretkey1" \
+-d "{\"Timestamp\": `date +%s`.12, \"Value\": 49.850}" \
+http://127.0.0.1:8080/api/submit/meter1
+````
 
 Please note that I appended ``.12`` after the date command to simulate
 subsecond resolution.
