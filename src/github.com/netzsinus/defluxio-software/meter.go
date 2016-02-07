@@ -51,6 +51,15 @@ func (mc Meters) StartBestMeterUpdater(timeout time.Duration) {
 }
 
 func (mc Meters) GetBestMeter() (m *Meter) {
+	if BestMeter == nil {
+		// previously, no best meter was selected, but maybe we just
+		// received an update.
+		BestMeter = mc.SelectBestMeter(time.Second * 5)
+		if BestMeter != nil {
+			log.Println("Activated BestMeter - connected web clients will " +
+				"receive updates")
+		}
+	}
 	return BestMeter
 }
 
