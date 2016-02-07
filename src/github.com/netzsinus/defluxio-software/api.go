@@ -179,7 +179,18 @@ func MkSubmitReadingHandler(dbchannel chan MeterReading, serverConfig *ServerCon
 		// Note: This is a costly operation, but right now we don't have
 		// many meters. If the number of meters increases, change this
 		// algorithm.
-		if BestMeter != nil {
+		meters := serverConfig.Meters
+		if meters.GetBestMeter() == nil {
+			// previously, no best meter was selected, but we just received an
+			// update. AppendReading above should enable us to select the
+			// current meter as the best one.
+			serverConfig.Meters.SelectBestMeter(serverConfig.MeterTimeout)
+			if meters.GetBestMeter() != nil {
+				log.Println("Activated BestMeter - now web clients will " +
+					"receive updates")
+			}
+		}
+		if meters.GetBestMeter() != nil {
 			if BestMeter.ID == meterid {
 				// The update we have received is from the best meter
 				//log.Println("Received update from highest ranking meter", BestMeter.ID)
@@ -190,8 +201,9 @@ func MkSubmitReadingHandler(dbchannel chan MeterReading, serverConfig *ServerCon
 				}
 				H.broadcast <- []byte(updateMessage)
 			}
-		} else { // TODO: Initialize Bestmeter
-			log.Printf("BestMeter not initialized.")
+		} else {
+			log.Println("BestMeter not initialized, measurement not " +
+				"forwarded to web clients.")
 		}
 
 	})

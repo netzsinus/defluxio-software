@@ -23,11 +23,7 @@ type Meter struct {
 
 type Meters []*Meter
 
-var BestMeter *Meter
-
-//type MeterCollection struct {
-//	Meters []Meter
-//}
+var BestMeter *Meter //TODO: Refactor this to be private
 
 func isEmpty(s string) bool {
 	return s == ""
@@ -42,27 +38,33 @@ func (m *Meter) AppendReading(r Reading) {
 }
 
 func (mc Meters) StartBestMeterUpdater(timeout time.Duration) {
-	BestMeter = mc.GetBestMeter(timeout)
+	BestMeter = mc.SelectBestMeter(timeout)
 	ticker := time.NewTicker(time.Second * timeout / 2)
 	go func() {
 		for _ = range ticker.C {
-			BestMeter = mc.GetBestMeter(timeout)
+			BestMeter = mc.SelectBestMeter(timeout)
+			if BestMeter == nil {
+				log.Printf("No active meters available, deactivating BestMeter")
+			}
 		}
 	}()
 }
 
-func (mc Meters) GetBestMeter(timeout time.Duration) (m *Meter) {
+func (mc Meters) GetBestMeter() (m *Meter) {
+	return BestMeter
+}
+
+func (mc Meters) SelectBestMeter(timeout time.Duration) (m *Meter) {
 	sort.Sort(ByRank{mc})
 	for _, m := range mc {
-		if b, _ := m.ActiveWithinLast(time.Second * timeout); b {
-			// do all the handling for the "best" meter
+		if b, _ := m.activeWithinLast(time.Second * timeout); b {
 			return m
 		}
 	}
 	return nil
 }
 
-func (m *Meter) ActiveWithinLast(deadline time.Duration) (bool, error) {
+func (m *Meter) activeWithinLast(deadline time.Duration) (bool, error) {
 	r, err := m.Cache.LastReading()
 	if err != nil {
 		return false, err
